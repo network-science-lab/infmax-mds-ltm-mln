@@ -1,4 +1,4 @@
-name: infmax-simulator-icm-mln
+name: infmax-mds-ltm-mln
 channels:
   - defaults
 dependencies:

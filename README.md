@@ -12,14 +12,15 @@ First, initialise the enviornment:
 
 ```bash
 conda env create -f env/conda.yaml
-conda activate infmax-simulator-icm-mln
+conda activate infmax-mds-ltm-mln
+
 ```
 
 Then, pull the submodule and install its code:
 
 ```bash
 git submodule init && git submodule update
-pip install -e _dataset/infmax_data_utils
+pip install -e _data_set
 ```
 
 ## Data
