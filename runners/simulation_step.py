@@ -1,4 +1,4 @@
-"""Main runner of the simulator."""
+"""A script with defined single simulation step."""
 
 from pathlib import Path
 

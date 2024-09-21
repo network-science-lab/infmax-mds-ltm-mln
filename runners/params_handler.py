@@ -1,3 +1,5 @@
+"""A script with functions to facilitate liading simulation's parameters and input data."""
+
 import itertools
 import json
 

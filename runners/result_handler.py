@@ -1,3 +1,5 @@
+"""A script with functions facilitating processing and saving the results."""
+
 import shutil
 
 from dataclasses import dataclass, asdict
