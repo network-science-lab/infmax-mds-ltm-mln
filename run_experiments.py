@@ -20,7 +20,7 @@ def parse_args(*args):
 if __name__ == "__main__":
 
     # uncomment for debugging
-    args = parse_args(["_configs/example_classic.yaml"])
+    args = parse_args(["example_config.yaml"])
 
     # comment this line while debugging
     # args = parse_args()

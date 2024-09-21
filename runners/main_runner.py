@@ -51,11 +51,11 @@ def run_experiments(config: dict[str, Any]) -> None:
 
     # get a start time
     start_time = utils.get_current_time()
-    print(f"Experiments started at {start_time}")
+    print(f"\nExperiments started at {start_time}")
 
     # repeat main loop for given number of times
     for rep in range(1, repetitions + 1):
-        print(f"\n\nRepetition {rep}/{repetitions}\n\n")
+        print(f"\nRepetition {rep}/{repetitions}\n")
         rep_results = []
         ver = f"{rng_seed}_{rep}"
 
@@ -113,5 +113,5 @@ def run_experiments(config: dict[str, Any]) -> None:
         result_handler.zip_detailed_logs([det_dir, rnk_dir], rm_logged_dirs=True)
 
     finish_time = utils.get_current_time()
-    print(f"Experiments finished at {finish_time}")
+    print(f"\nExperiments finished at {finish_time}")
     print(f"Experiments lasted {utils.get_diff_of_times(start_time, finish_time)} minutes")

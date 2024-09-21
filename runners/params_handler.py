@@ -85,7 +85,6 @@ def load_networks(networks: list[str]) -> list[Network]:
 
 def load_seed_selectors(ss_methods: list[str]) -> list[SeedSelector]:
     ssms = []
-    print(ss_methods)
     for ssm_name in ss_methods:
         print(f"Initialising seed selection method: {ssm_name}")
         ssms.append(SeedSelector(ssm_name, get_seed_selector(ssm_name)))
