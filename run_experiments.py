@@ -20,10 +20,10 @@ def parse_args(*args):
 if __name__ == "__main__":
 
     # uncomment for debugging
-    args = parse_args(["example_config.yaml"])
+    # args = parse_args(["example_config.yaml"])
 
     # comment this line while debugging
-    # args = parse_args()
+    args = parse_args()
 
     with open(args.config, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)

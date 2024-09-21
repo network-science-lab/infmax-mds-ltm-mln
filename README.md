@@ -44,10 +44,9 @@ request to get  an access via  e-mail (michal.czuba@pwr.edu.pl). Then, simply ex
 
 ## Running the pipeline
 
-To run experiments execute: `run_experiments.py` and provide proper CLI arguments, i.e. a path to 
-the configuration file. See `example_config.yaml` for inspirations. As a result, for each repetition
-of the cartesian product computed for the provided parameters, a csv file will be obtained with
-following columns:
+To run experiments execute: `python run_experiments.py <config file>`. See `example_config.yaml` for
+inspirations. As a result, for each repetition of the cartesian product computed for the provided
+parameters, a csv file will be obtained with following columns:
 
 ```python
 {
