@@ -4,7 +4,7 @@ from pathlib import Path
 
 import network_diffusion as nd
 
-from runners.utils import extract_simulation_result, SimulationPartialResult
+from runners.result_hander import extract_simulation_result, SimulationPartialResult
 
 
 def experiment_step(

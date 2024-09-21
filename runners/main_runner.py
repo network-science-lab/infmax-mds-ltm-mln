@@ -4,7 +4,7 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from runners.utils import (
+from runners.result_hander import (
     SimulationFullResult,
     get_current_time,
     get_diff_of_times,
