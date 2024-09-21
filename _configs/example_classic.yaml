@@ -1,12 +1,11 @@
 model:
-  parameters:
-    protocols: ["AND", "OR"]
-    mi_values: [
-      0.05, 0.1, 0.15, # 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
-      # 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0
-    ]
-    seed_budgets: [15, 20] # , 25, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]  # TODO
-    ss_methods: ["deg_c", "nghb_1s", "nghb_2s", "random"]
+  protocols: ["AND", "OR"]
+  mi_values: [
+    0.05, 0.1, 0.15, # 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+    # 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0
+  ]
+  seed_budgets: [15, 20] # , 25, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]  # TODO
+  ss_methods: ["deg_c", "nghb_1s", "nghb_2s", "random"]
 
 networks: [
   # "arxiv",
@@ -27,6 +26,7 @@ networks: [
   # "timik1q2009",
   "toy_network",
 ]
+
 ranking_path: null
 # ranking_path: "_experiments/examples/rankings"
 # ranking_path: "_output_classic/degree_centrality/rankings"

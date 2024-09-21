@@ -16,13 +16,13 @@ def run_experiments(config: dict[str, Any]) -> None:
 
     # load networks, compute rankings and save them
     nets = params_handler.load_networks(config["networks"])
-    ssms = params_handler.load_seed_selectors(config["model"]["parameters"]["ss_methods"])
+    ssms = params_handler.load_seed_selectors(config["model"]["ss_methods"])
 
     # get parameters of the simulation
     p_space = params_handler.get_parameter_space(
-        protocols=config["model"]["parameters"]["protocols"],
-        seed_budgets=config["model"]["parameters"]["seed_budgets"],
-        mi_values=config["model"]["parameters"]["mi_values"],
+        protocols=config["model"]["protocols"],
+        seed_budgets=config["model"]["seed_budgets"],
+        mi_values=config["model"]["mi_values"],
         networks=[n.name for n in nets],
         ss_methods=[s.name for s in ssms],
     )
