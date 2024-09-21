@@ -1,5 +1,6 @@
 dvc~=3.51.2
 dvc-gdrive~=3.0.1
+GitPython~=3.1.43
 matplotlib~=3.9.0
 networkx~=3.3
 network-diffusion==0.16.0

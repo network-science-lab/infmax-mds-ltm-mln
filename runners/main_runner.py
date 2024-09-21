@@ -45,6 +45,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     compress_to_zip = config["logging"]["compress_to_zip"]
 
     # save the config
+    config["git_sha"] = utils.get_recent_git_sha()
     with open(out_dir / "config.yaml", "w", encoding="utf-8") as f:
         yaml.dump(config, f)
 
@@ -56,13 +57,14 @@ def run_experiments(config: dict[str, Any]) -> None:
     for rep in range(1, repetitions + 1):
         print(f"\n\nRepetition {rep}/{repetitions}\n\n")
         rep_results = []
+        ver = f"{rng_seed}_{rep}"
 
         # for each network ans ss method compute a ranking
         rankings = params_handler.compute_rankings(
             seed_selectors=ssms,
             networks=nets,
             out_dir=rnk_dir,
-            version=f"{rng_seed}_{rep}",
+            version=ver,
             ranking_path=ranking_path,
         )
 
@@ -83,7 +85,7 @@ def run_experiments(config: dict[str, Any]) -> None:
                     ss_name=ss_method,
                 )
             )
-            ic_name = f"{utils.get_case_name_base(proto, mi, budget[1], ss_method, net_name)}_{rep}"
+            ic_name = f"{utils.get_case_name_base(proto, mi, budget[1], ss_method, net_name)}--ver-{ver}"
             try:
                 step_spr = simulation_step.experiment_step(
                     protocol=proto,
@@ -104,7 +106,7 @@ def run_experiments(config: dict[str, Any]) -> None:
                 raise e
         
         # aggregate results for given repetition number and save them to a csv file
-        result_handler.save_results(rep_results, out_dir / f"results_{rep}.csv")
+        result_handler.save_results(rep_results, out_dir / f"results--ver-{ver}.csv")
 
     # compress global logs and config
     if compress_to_zip:

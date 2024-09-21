@@ -4,6 +4,7 @@ import warnings
 
 from math import log10
 
+import git
 import torch
 import numpy as np
 
@@ -43,6 +44,12 @@ def get_case_name_rich(
         f"case-{str(case_idx).zfill(int(log10(cases_nb)+1))}/{cases_nb}--" +
         get_case_name_base(protocol, mi_value, budget, ss_name, net_name)
     )
+
+
+def get_recent_git_sha() -> str:
+    repo = git.Repo(search_parent_directories=True)
+    git_sha = repo.head.object.hexsha
+    return git_sha
 
 
 def set_rng_seed(seed: int) -> None:
