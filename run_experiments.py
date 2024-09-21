@@ -4,7 +4,7 @@ import argparse
 import yaml
 
 from runners import main_runner
-from runners.utils import set_seed
+from runners.commons import set_rng_seed
 
 
 def parse_args(*args):
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
     if random_seed := config["run"].get("random_seed"):
         print(f"Setting randomness seed as {random_seed}!")
-        set_seed(config["run"]["random_seed"])
+        set_rng_seed(config["run"]["random_seed"])
     print(f"Loaded config: {config}")
 
     main_runner.run_experiments(config)

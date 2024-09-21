@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from runners import main_runner
-from runners.utils import set_seed
+from runners.commons import set_rng_seed
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def test_e2e(tcase_experiment_steps, tcase_config, tcase_csv_names, tmpdir):
     for experiment_step in tcase_experiment_steps:
         tcase_config["run"]["experiment_step"] = experiment_step
         tcase_config["logging"]["out_dir"] = str(tmpdir)
-        set_seed(tcase_config["run"]["random_seed"])
+        set_rng_seed(tcase_config["run"]["random_seed"])
         main_runner.run_experiments(tcase_config)
         compare_results(Path("_test_data"), Path(tmpdir), tcase_csv_names, experiment_step)
 

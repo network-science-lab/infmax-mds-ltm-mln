@@ -1,19 +1,28 @@
 import itertools
 import json
-from pathlib import Path
-from typing import Any
+import random
 import warnings
 
-from dataclasses import dataclass
-from itertools import product
-from math import log10
+from pathlib import Path
+from typing import Any
 
+import torch
 import network_diffusion as nd
+import numpy as np
 
 from _data_set.nsl_data_utils.loaders.net_loader import load_network
-from runners.utils import get_seed_selector, JSONEncoder
+from dataclasses import dataclass
+from math import log10
+
 
 warnings.filterwarnings(action="ignore", category=FutureWarning)
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, nd.MLNetworkActor):
+            return obj.__dict__
+        return super().default(obj)
 
 
 @dataclass(frozen=True)
@@ -28,6 +37,13 @@ class SeedSelector:
     selector: nd.seeding.BaseSeedSelector
 
 
+def set_rng_seed(seed: int) -> None:
+    """Fix seed of the random numbers generator for reproducable experiments."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+
 def get_parameter_space(
     protocols: list[str],
     seed_budgets: list[float],
@@ -37,11 +53,6 @@ def get_parameter_space(
 ) -> list[tuple[str, tuple[int, int], float, str, SeedSelector]]:
     seed_budgets_full = [(100 - i, i) for i in seed_budgets]
     return list(itertools.product(protocols, seed_budgets_full, mi_values, networks, ss_methods))
-
-
-def get_ranking(actor: nd.MLNetworkActor, actors: list[nd.MLNetworkActor]) -> nd.seeding.MockingActorSelector:
-    ranking_list = [actor, *set(actors).difference({actor})]
-    return nd.seeding.MockingActorSelector(ranking_list)
 
 
 def get_case_name_base(protocol: str, mi_value: float, budget: int, ss_name: str, net_name: str) -> str:
@@ -64,6 +75,38 @@ def get_case_name_rich(
         f"case-{str(case_idx).zfill(int(log10(cases_nb)+1))}/{cases_nb}--" +
         get_case_name_base(protocol, mi_value, budget, ss_name, net_name)
     )
+
+
+def get_seed_selector(selector_name):
+    if selector_name == "cbim":
+        return nd.seeding.CBIMSeedselector
+    elif selector_name == "cim":
+        return nd.seeding.CIMSeedSelector
+    elif selector_name == "degree_centrality":
+        return nd.seeding.DegreeCentralitySelector
+    elif selector_name == "degree_centrality_discount":
+        return nd.seeding.DegreeCentralityDiscountSelector
+    elif selector_name == "k_shell":
+        return nd.seeding.KShellSeedSelector
+    elif selector_name == "k_shell_mln":
+        return nd.seeding.KShellMLNSeedSelector
+    elif selector_name == "kpp_shell":
+        return nd.seeding.KPPShellSeedSelector
+    elif selector_name == "neighbourhood_size":
+        return nd.seeding.NeighbourhoodSizeSelector
+    elif selector_name == "neighbourhood_size_discount":
+        return nd.seeding.NeighbourhoodSizeDiscountSelector
+    elif selector_name == "page_rank":
+        return nd.seeding.PageRankSeedSelector
+    elif selector_name == "page_rank_mln":
+        return nd.seeding.PageRankMLNSeedSelector
+    elif selector_name == "random":
+        return nd.seeding.RandomSeedSelector
+    elif selector_name == "vote_rank":
+        return nd.seeding.VoteRankSeedSelector
+    elif selector_name == "vote_rank_mln":
+        return nd.seeding.VoteRankMLNSeedSelector
+    raise AttributeError(f"{selector_name} is not a valid seed selector name!")
 
 
 def load_networks(networks: list[str]) -> list[Network]:
