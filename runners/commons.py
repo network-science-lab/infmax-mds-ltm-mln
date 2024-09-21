@@ -1,21 +1,13 @@
 import itertools
 import json
-import random
-import warnings
 
 from pathlib import Path
 from typing import Any
 
-import torch
 import network_diffusion as nd
-import numpy as np
 
 from _data_set.nsl_data_utils.loaders.net_loader import load_network
 from dataclasses import dataclass
-from math import log10
-
-
-warnings.filterwarnings(action="ignore", category=FutureWarning)
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -37,13 +29,6 @@ class SeedSelector:
     selector: nd.seeding.BaseSeedSelector
 
 
-def set_rng_seed(seed: int) -> None:
-    """Fix seed of the random numbers generator for reproducable experiments."""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-
-
 def get_parameter_space(
     protocols: list[str],
     seed_budgets: list[float],
@@ -53,28 +38,6 @@ def get_parameter_space(
 ) -> list[tuple[str, tuple[int, int], float, str, SeedSelector]]:
     seed_budgets_full = [(100 - i, i) for i in seed_budgets]
     return list(itertools.product(protocols, seed_budgets_full, mi_values, networks, ss_methods))
-
-
-def get_case_name_base(protocol: str, mi_value: float, budget: int, ss_name: str, net_name: str) -> str:
-    return f"proto-{protocol}--mi-{round(mi_value, 3)}--budget-{budget}--ss-{ss_name}--net-{net_name}"
-
-
-def get_case_name_rich(
-    case_idx: int,
-    cases_nb: int,
-    rep_idx: int,
-    reps_nb: int,
-    protocol: str,
-    mi_value: float,
-    budget: int, 
-    net_name: str,
-    ss_name: str,
-) -> str:
-    return (
-        f"repet-{str(rep_idx).zfill(int(log10(reps_nb)+1))}/{reps_nb}--" +
-        f"case-{str(case_idx).zfill(int(log10(cases_nb)+1))}/{cases_nb}--" +
-        get_case_name_base(protocol, mi_value, budget, ss_name, net_name)
-    )
 
 
 def get_seed_selector(selector_name):

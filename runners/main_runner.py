@@ -4,15 +4,11 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from runners.result_hander import (
-    SimulationFullResult,
-    get_current_time,
-    get_diff_of_times,
-    save_results,
-    zip_detailed_logs,
-)
+from runners import commons, simulation_step
+from runners.result_handler import SimulationFullResult, save_results, zip_detailed_logs
+from runners.utils import get_current_time, get_diff_of_times, get_case_name_base, get_case_name_rich
 from tqdm import tqdm
-from runners import commons, step_classic
+
 
 DET_LOGS_DIR = "detailed_logs"
 RANKINGS_DIR = "rankings"
@@ -77,7 +73,7 @@ def run_experiments(config: dict[str, Any]) -> None:
         for idx, investigated_case in enumerate(p_bar):
             proto, budget, mi, net_name, ss_method = investigated_case
             p_bar.set_description_str(
-                commons.get_case_name_rich(
+                get_case_name_rich(
                     rep_idx=rep,
                     reps_nb=repetitions,
                     case_idx=idx,
@@ -89,9 +85,9 @@ def run_experiments(config: dict[str, Any]) -> None:
                     ss_name=ss_method,
                 )
             )
-            ic_name = f"{commons.get_case_name_base(proto, mi, budget[1], ss_method, net_name)}_{rep}"
+            ic_name = f"{get_case_name_base(proto, mi, budget[1], ss_method, net_name)}_{rep}"
             try:
-                step_spr = step_classic.experiment_step(
+                step_spr = simulation_step.experiment_step(
                     protocol=proto,
                     budget=budget,
                     mi_value=mi,

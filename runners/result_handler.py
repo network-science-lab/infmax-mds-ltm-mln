@@ -1,4 +1,3 @@
-import datetime
 import shutil
 
 from dataclasses import dataclass, asdict
@@ -54,18 +53,6 @@ class SimulationFullResult(SimulationPartialResult):
             mi_value=mi_value,
             ss_method=ss_method
         )
-
-
-def get_current_time():
-    now = datetime.datetime.now()
-    return now.strftime("%Y-%m-%d %H:%M:%S")
-
-
-def get_diff_of_times(strftime_1, strftime_2):
-    fmt = "%Y-%m-%d %H:%M:%S"
-    t_1 = datetime.datetime.strptime(strftime_1, fmt)
-    t_2 = datetime.datetime.strptime(strftime_2, fmt)
-    return t_2 - t_1
 
 
 def extract_simulation_result(detailed_logs: dict[str, Any], net: nd.MultilayerNetwork) -> SimulationPartialResult:

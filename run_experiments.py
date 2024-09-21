@@ -4,7 +4,7 @@ import argparse
 import yaml
 
 from runners import main_runner
-from runners.commons import set_rng_seed
+from runners.utils import set_rng_seed
 
 
 def parse_args(*args):
