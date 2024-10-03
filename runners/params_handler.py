@@ -42,14 +42,26 @@ def get_parameter_space(
 
 
 def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
+    if selector_name == "btw":
+        return nd.seeding.BetweennessSelector()
     if selector_name == "cbim":
         return nd.seeding.CBIMSeedselector(merging_idx_threshold=1)
     elif selector_name == "cim":
         return nd.seeding.CIMSeedSelector()
+    elif selector_name == "cls":
+        return nd.seeding.ClosenessSelector()
     elif selector_name == "deg_c":
         return nd.seeding.DegreeCentralitySelector()
-    elif selector_name == "deg_c_d":
+    elif selector_name == "deg_cd":
         return nd.seeding.DegreeCentralityDiscountSelector()
+    elif selector_name == "d_btw":
+        return nd.seeding.DriverActorSelector(method=nd.seeding.BetweennessSelector())
+    elif selector_name == "d_cls":
+        return nd.seeding.DriverActorSelector(method=nd.seeding.ClosenessSelector())
+    elif selector_name == "d_deg":
+        return nd.seeding.DriverActorSelector(method=nd.seeding.DegreeCentralitySelector())
+    elif selector_name == "d_ran":
+        return nd.seeding.DriverActorSelector(method=nd.seeding.RandomSeedSelector())
     elif selector_name == "k_sh":
         return nd.seeding.KShellSeedSelector()
     elif selector_name == "k_sh_m":
