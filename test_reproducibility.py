@@ -19,7 +19,7 @@ def tcase_config():
             "ss_methods": ["deg_c", "random"],
         },
         "networks": ["toy_network"],
-        "ranking_part": None,
+        "ranking_path": None,
         "run": {"max_epochs_num": 10, "patience": 1, "repetitions": 3, "random_seed": 1995},
         "logging": {"full_output_frequency": 1, "compress_to_zip": False, "out_dir": None},
     }
@@ -36,10 +36,20 @@ def tcase_csv_names():
 
 def compare_results(gt_dir: Path, test_dir: Path, csv_names: list[str]) -> None:
     for csv_name in csv_names:
-        gt_df = pd.read_csv(gt_dir / csv_name, index_col=0)
-        test_df = pd.read_csv(test_dir / csv_name, index_col=0)
+        gt_df = pd.read_csv(gt_dir / csv_name)
+        test_df = pd.read_csv(test_dir / csv_name)
         pd.testing.assert_frame_equal(gt_df, test_df, obj=csv_name)
-        print(f"Test passed for {csv_name}")
+        print(f"Identity test passed for {csv_name}")
+        check_integrity(test_df)
+        print(f"Integrity test passed for {csv_name}")
+
+
+def check_integrity(test_df: pd.DataFrame) -> None:
+    test_df["er_temp"] = test_df["expositions_rec"].map(lambda x: x.split(";")).map(lambda x: [int(xx) for xx in x])
+    assert test_df["seed_nb"].equals(test_df["seed_ids"].map(lambda x: x.split(";")).map(lambda x: len(x)))
+    assert test_df["seed_nb"].equals(test_df["er_temp"].map(lambda x: x[0]))
+    assert test_df["simulation_length"].equals(test_df["er_temp"].map(lambda x: len(x[:-1])))
+    assert test_df["exposed_nb"].equals(test_df["er_temp"].map(lambda x: sum(x)))
 
 
 def test_e2e(tcase_config, tcase_csv_names, tmpdir):

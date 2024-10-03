@@ -3,8 +3,8 @@
 A repository to check efficiency of MDS-based seed selection methods in influence maximisation
 problem under Multilayer Linear Threshold Model.
 
-* Authors: Piotr Bródka, Michał Czuba
-* Affiliation: WUST, Wrocław, Lower Silesia, Poland
+* Authors: Piotr Bródka*, Michał Czuba*, Mingshan Jia**
+* Affiliation: *WUST, Wrocław, Lower Silesia, Poland; **UTS, Sydney, NSW, Australia
 
 ## Configuration of the runtime
 
@@ -51,13 +51,12 @@ parameters, a csv file will be obtained with following columns:
 ```python
 {
     seed_ids: str           # IDs of actors that were seeds aggr. into string (sep. by ;)
-    gain: float             # gain using this seed set
+    gain: float             # gain* obtained using this seed set
     simulation_length: int  # nb. of simulation steps
-    seeds: int              # nb. of actors that were seeds
-    exposed: int            # nb. of infected actors
-    not_exposed: int        # nb. of not infected actors
-    peak_infected: int      # maximal nb. of infected actors in a single sim. step
-    peak_iteration: int     # a sim. step when the peak occured
+    seed_nb: int            # nb. of actors that were seeds
+    exposed_nb: int         # nb. of active actors at the end of the simulation
+    unexposed_nb: int       # nb. of actors that remained inactive
+    expositons_rec: str     # record of new activations in each epoch aggr. into string (sep. by ;)
     network: str            # network's name
     protocol: str           # protocols's name
     seed_budget: float      # a value of the maximal seed budget
@@ -65,6 +64,9 @@ parameters, a csv file will be obtained with following columns:
     ss_method: str          # seed selection method's name
 }
 ```
+
+`*` Gain is the percentage of the non-initially seeded population that became exposed during the
+simulation: `(exposed_nb - seed_nb) / (total_actor_nb - seed_nb) * 100%`
 
 The simulator will also save provided configuraiton file, rankings of actors used in computations,
 and detailed logs of evaluated cases whose index divided modulo by `full_output_frequency` equals 0.
