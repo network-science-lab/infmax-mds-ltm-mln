@@ -3,13 +3,13 @@
 import itertools
 import json
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import network_diffusion as nd
 
 from _data_set.nsl_data_utils.loaders.net_loader import load_network
-from dataclasses import dataclass
-
+from runners.new_selectors import DCBSelector
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -50,6 +50,8 @@ def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
         return nd.seeding.CIMSeedSelector()
     elif selector_name == "cls":
         return nd.seeding.ClosenessSelector()
+    elif selector_name == "dcb":
+        return DCBSelector()
     elif selector_name == "deg_c":
         return nd.seeding.DegreeCentralitySelector()
     elif selector_name == "deg_cd":
@@ -58,6 +60,8 @@ def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
         return nd.seeding.DriverActorSelector(method=nd.seeding.BetweennessSelector())
     elif selector_name == "d_cls":
         return nd.seeding.DriverActorSelector(method=nd.seeding.ClosenessSelector())
+    elif selector_name == "d_dcb":
+        return nd.seeding.DriverActorSelector(method=DCBSelector())
     elif selector_name == "d_deg":
         return nd.seeding.DriverActorSelector(method=nd.seeding.DegreeCentralitySelector())
     elif selector_name == "d_ran":
