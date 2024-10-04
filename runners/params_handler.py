@@ -4,12 +4,15 @@ import itertools
 import json
 
 from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
+from typing import Callable
 
 import network_diffusion as nd
 
 from _data_set.nsl_data_utils.loaders.net_loader import load_network
 from runners.new_selectors import DCBSelector
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -41,6 +44,18 @@ def get_parameter_space(
     return list(itertools.product(protocols, seed_budgets_full, mi_values, networks, ss_methods))
 
 
+def get_with_mds(get_ss_func: Callable) -> Callable:
+    """Decorate seed selection loader function so that it can optionally use MDS."""
+    @wraps(get_ss_func)
+    def wrapper(selector_name: str) -> nd.seeding.BaseSeedSelector:
+        if selector_name[:2] == "d^":
+            ss_method = get_ss_func(selector_name[2:])
+            return nd.seeding.DriverActorSelector(method=ss_method)
+        return get_ss_func(selector_name)
+    return wrapper
+
+
+@get_with_mds
 def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
     if selector_name == "btw":
         return nd.seeding.BetweennessSelector()
@@ -56,16 +71,6 @@ def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
         return nd.seeding.DegreeCentralitySelector()
     elif selector_name == "deg_cd":
         return nd.seeding.DegreeCentralityDiscountSelector()
-    elif selector_name == "d_btw":
-        return nd.seeding.DriverActorSelector(method=nd.seeding.BetweennessSelector())
-    elif selector_name == "d_cls":
-        return nd.seeding.DriverActorSelector(method=nd.seeding.ClosenessSelector())
-    elif selector_name == "d_dcb":
-        return nd.seeding.DriverActorSelector(method=DCBSelector())
-    elif selector_name == "d_deg":
-        return nd.seeding.DriverActorSelector(method=nd.seeding.DegreeCentralitySelector())
-    elif selector_name == "d_ran":
-        return nd.seeding.DriverActorSelector(method=nd.seeding.RandomSeedSelector())
     elif selector_name == "k_sh":
         return nd.seeding.KShellSeedSelector()
     elif selector_name == "k_sh_m":
