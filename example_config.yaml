@@ -3,8 +3,10 @@ model:  # parameters of the mLTM in form of lists. simulator will evaluate their
   mi_values: [0.1, 0.15, 0.2]
   seed_budgets: [10]
   ss_methods: [
-    "btw",
+    # "btw",
     # "d^btw",
+    "g^random",
+    "g^d^random",
     # # "cbim",
     # # "d^cbim",
     # # "cim",
