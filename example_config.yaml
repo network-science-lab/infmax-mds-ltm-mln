@@ -73,6 +73,6 @@ run:
   random_seed: 43  # seed of the random numbers generator (to make results reproducible)
 
 logging:
-  full_output_frequency: 1  # freq. of logging very detailed data form simulated cases
+  full_output_frequency: -1  # freq. of logging very detailed data form simulated cases
   compress_to_zip: False  # wether compress ot zip "detailed_logs" and "rankings"
   out_dir: "./_example_results"  # directory where to save results

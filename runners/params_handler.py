@@ -2,6 +2,7 @@
 
 import itertools
 import json
+import math
 
 from dataclasses import dataclass
 from functools import wraps
@@ -56,6 +57,12 @@ def determine_runner(ss_methods: list[str]):
     elif not any(ssm_prefixes):
         return "ranking"
     raise ValueError(f"Config file shall contain ssm that can be run with one runner {ss_methods}!")
+
+
+def get_logging_frequency(full_output_frequency: int) -> float | int:
+    if full_output_frequency == -1:
+        return math.pi
+    return full_output_frequency
 
 
 def get_for_greedy(get_ss_func: Callable) -> Callable:
@@ -137,7 +144,9 @@ def load_seed_selectors(ss_methods: list[str]) -> list[SeedSelector]:
     return ssms
 
 
-def compute_rankings(  # TODO: deprive from greedy!!!
+# TODO: this function is not able yet to treat rankings for method: g^random and random as the the
+# same one. We can try to implement such functionality to speed up computations
+def compute_rankings(
     seed_selectors: list[SeedSelector],
     networks: list[Network],
     out_dir: Path,

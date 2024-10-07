@@ -24,7 +24,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     )
 
     # get parameters of the simulator
-    logging_freq = config["logging"]["full_output_frequency"]
+    logging_freq = params_handler.get_logging_frequency(config["logging"]["full_output_frequency"])
     max_epochs_num = 1000000000 if (_ := config["run"]["max_epochs_num"]) == -1 else _
     patience = config["run"]["patience"]
     ranking_path = config.get("ranking_path")
