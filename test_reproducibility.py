@@ -5,8 +5,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from runners import main_runner
-from runners.utils import set_rng_seed
+from src import main
+from src.utils import set_rng_seed
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def check_integrity(test_df: pd.DataFrame) -> None:
 def test_e2e(tcase_config, tcase_csv_names, tmpdir):
     tcase_config["logging"]["out_dir"] = str(tmpdir)
     set_rng_seed(tcase_config["run"]["random_seed"])
-    main_runner.run_experiments(tcase_config)
+    main.run_experiments(tcase_config)
     compare_results(Path("_test_data"), Path(tmpdir), tcase_csv_names)
 
 

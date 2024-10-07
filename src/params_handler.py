@@ -12,7 +12,7 @@ from typing import Callable
 import network_diffusion as nd
 
 from _data_set.nsl_data_utils.loaders.net_loader import load_network
-from runners.new_selectors import DCBSelector
+from src.new_selectors import DCBSelector
 
 
 class JSONEncoder(json.JSONEncoder):

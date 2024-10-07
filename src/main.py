@@ -4,7 +4,8 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from runners import params_handler, result_handler, utils, ranking_runner, greedy_runner
+from src import params_handler, result_handler, utils
+from src.runners  import greedy_runner, ranking_runner
 from tqdm import tqdm
 
 
@@ -28,7 +29,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     max_epochs_num = 1000000000 if (_ := config["run"]["max_epochs_num"]) == -1 else _
     patience = config["run"]["patience"]
     ranking_path = config.get("ranking_path")
-    repetitions = config["run"]["repetitions"]  # TODO: for greedy this shall be 1
+    repetitions = config["run"]["repetitions"]
     rng_seed = config["run"]["random_seed"]
     step_handler = ranking_runner.handle_step if runner_type == "ranking" else greedy_runner.handle_step
 
