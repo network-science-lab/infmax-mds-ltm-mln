@@ -1,0 +1,39 @@
+model:  # parameters of the mLTM in fomr of lists. simulator will evaluate their cartesian product
+  protocols: ["AND", "OR"]
+  mi_values: [0.05, 0.1, 0.15]
+  seed_budgets: [10, 15, 20]
+  ss_methods: ["deg_c", "nghb_1s", "nghb_2s", "random"]
+
+networks: [
+  # "arxiv",
+  "aucs",
+  # "cannes",
+  # "ckm_physicians",
+  # "eu_transportation",
+  # "eu_transport_klm",
+  # "lazega",
+  # "er1",
+  # "er2",
+  # "er3",
+  # "er5",
+  # "sf1",
+  # "sf2",
+  # "sf3",
+  # "sf5",
+  # "timik1q2009",
+  "toy_network",
+]
+
+ranking_path: null  # path to read rankings of actors from (null to compute them before simulaiton)
+# ranking_path: "_example_results/rankings"
+
+run:
+  max_epochs_num: -1  # this is a wildcard for unlimited allowed epochs in LTM spread instance
+  patience: 1  # after given number of epochs without spreading progress simulation is stopped
+  repetitions: 2  # number of repetitions of each simulated case
+  random_seed: 43  # seed of the random numbers generator (to make results reproducible)
+
+logging:
+  full_output_frequency: 1  # freq. of logging very detailed data form simulated cases
+  compress_to_zip: False  # wether compress ot zip "detailed_logs" and "rankings"
+  out_dir: "./_example_results"  # directory where to save results
