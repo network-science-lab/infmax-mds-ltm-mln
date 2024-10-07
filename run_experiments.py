@@ -3,7 +3,7 @@
 import argparse
 import yaml
 
-from runners import main_runner
+from runners import main_runner, greedy_runner
 from runners.utils import set_rng_seed
 
 
@@ -20,10 +20,10 @@ def parse_args(*args):
 if __name__ == "__main__":
 
     # uncomment for debugging
-    # args = parse_args(["example_config.yaml"])
+    args = parse_args(["example_config.yaml"])
 
     # comment this line while debugging
-    args = parse_args()
+    # args = parse_args()
 
     with open(args.config, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -32,4 +32,4 @@ if __name__ == "__main__":
         set_rng_seed(config["run"]["random_seed"])
     print(f"Loaded config: {config}")
 
-    main_runner.run_experiments(config)
+    greedy_runner.run_experiments(config)

@@ -4,6 +4,7 @@ import yaml
 from pathlib import Path
 from typing import Any
 
+import network_diffusion as nd
 from runners import params_handler, result_handler, simulation_step, utils
 from tqdm import tqdm
 
@@ -21,10 +22,10 @@ def run_experiments(config: dict[str, Any]) -> None:
     # get parameters of the simulation
     p_space = params_handler.get_parameter_space(
         protocols=config["model"]["protocols"],
-        seed_budgets=config["model"]["seed_budgets"],
+        seed_budgets=config["model"]["seed_budgets"],  # TODO: this should be a single value
         mi_values=config["model"]["mi_values"],
         networks=[n.name for n in nets],
-        ss_methods=[s.name for s in ssms],
+        ss_methods=[s.name for s in ssms],  # TODO: this should be a single string
     )
 
     # get parameters of the simulator
@@ -32,7 +33,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     max_epochs_num = 1000000000 if (_ := config["run"]["max_epochs_num"]) == -1 else _
     patience = config["run"]["patience"]
     ranking_path = config.get("ranking_path")
-    repetitions = config["run"]["repetitions"]
+    repetitions = 1  # TODO: for greedy this shall be 1
     rng_seed = config["run"]["random_seed"]
 
     # prepare output directories and determine how to store results
@@ -59,14 +60,14 @@ def run_experiments(config: dict[str, Any]) -> None:
         rep_results = []
         ver = f"{rng_seed}_{rep}"
 
-        # for each network ans ss method compute a ranking  TODO: make this block conditional
-        rankings = params_handler.compute_rankings(
-            seed_selectors=ssms,
-            networks=nets,
-            out_dir=rnk_dir,
-            version=ver,
-            ranking_path=ranking_path,
-        )
+        # # for each network ans ss method compute a ranking
+        # rankings = params_handler.compute_rankings(
+        #     seed_selectors=ssms,
+        #     networks=nets,
+        #     out_dir=rnk_dir,
+        #     version=ver,
+        #     ranking_path=ranking_path,
+        # )
 
         # start simulations
         p_bar = tqdm(p_space, desc="", leave=False, colour="green")
@@ -86,25 +87,56 @@ def run_experiments(config: dict[str, Any]) -> None:
                 )
             )
             ic_name = f"{utils.get_case_name_base(proto, mi, budget[1], ss_method, net_name)}--ver-{ver}"
-            try:  # TODO: all in try shall be moved to another function
-                step_spr = simulation_step.experiment_step(
-                    protocol=proto,
-                    budget=budget,
-                    mi_value=mi,
-                    net=[net.graph for net in nets if net.name == net_name][0],
-                    ranking=rankings[(net_name, ss_method)],
-                    max_epochs_num=max_epochs_num,
-                    patience=patience,
-                    out_dir=det_dir / ic_name if rep % logging_freq == 0 else None,
-                )
-                step_sfr = result_handler.SimulationFullResult.enhance_SPR(
-                    step_spr, net_name, proto, budget[1], mi, ss_method
-                )
-                rep_results.append(step_sfr)
+
+            try:
+
+                # initialise necessary data regarding the network
+                net: params_handler.Network = [net for net in nets if net.name == net_name][0]
+                actors_all = net.graph.get_actors()
+                actors_num = net.graph.get_actors_num()
+                greedy_ranking: set[nd.MLNetworkActor] = []
+
+                # repeat until budget spent exceeds maximum value
+                while (100 * len(greedy_ranking) / actors_num) <= budget[1]:
+
+                    # containers for the best actor in the run and its performance
+                    best_actor = None
+                    best_spr = result_handler.SimulationPartialResult("", 0, max_epochs_num, 0, 0, 0, 0)
+
+                    # obtain pool of actors and limit of budget in the run
+                    eval_seed_budget = 100 * (len(greedy_ranking) + 1) / actors_num
+                    available_actors = set(actors_all).difference(greedy_ranking)
+
+                    for actor in available_actors:
+                        step_spr = simulation_step.experiment_step(
+                            protocol=proto,
+                            budget=(100 - eval_seed_budget, eval_seed_budget),
+                            mi_value=mi,
+                            net=net.graph,
+                            ranking=[*greedy_ranking, actor, *available_actors.difference({actor})],
+                            max_epochs_num=max_epochs_num,
+                            patience=patience,
+                            out_dir=None,
+                        )
+                        if (
+                            (step_spr.gain > best_spr.gain) or
+                            (step_spr.gain == best_spr.gain and step_spr.simulation_length < best_spr.simulation_length)
+                        ):
+                            best_actor = actor
+                            best_spr = step_spr
+                    
+                    # when the best combination is found update rankings
+                    greedy_ranking.append(best_actor)
+                    rep_results.append(
+                        result_handler.SimulationFullResult.enhance_SPR(
+                            best_spr, net_name, proto, eval_seed_budget, mi, ss_method
+                        )
+                    )
+
             except BaseException as e:
                 print(f"\nExperiment failed for case: {ic_name}")
                 raise e
-        
+
         # aggregate results for given repetition number and save them to a csv file
         result_handler.save_results(rep_results, out_dir / f"results--ver-{ver}.csv")
 

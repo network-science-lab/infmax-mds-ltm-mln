@@ -40,6 +40,8 @@ def get_parameter_space(
     networks: list[str],
     ss_methods: list[str],
 ) -> list[tuple[str, tuple[int, int], float, str, SeedSelector]]:
+    # TODO: at this moment evaluate corectness of parameter and assign a proper runner
+    # TODO: if runner is greedy, then select a maximal budget
     seed_budgets_full = [(100 - i, i) for i in seed_budgets]
     return list(itertools.product(protocols, seed_budgets_full, mi_values, networks, ss_methods))
 
