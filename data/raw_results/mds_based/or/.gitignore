@@ -1,0 +1,14 @@
+arxiv_netscience_coauthorship/detailed_logs.zip
+arxiv_netscience_coauthorship/rankings.zip
+arxiv_netscience_coauthorship/results--ver-*.csv
+arxiv_netscience_coauthorship/config.yaml
+small_real/detailed_logs.zip
+small_real/rankings.zip
+small_real/results--ver-*.csv
+small_real/config.yaml
+timik1q2009/detailed_logs*.zip
+timik1q2009/rankings*.zip
+timik1q2009/results--ver-*.csv
+timik1q2009/config-*.yaml
+small_artificial
+timik1q2009

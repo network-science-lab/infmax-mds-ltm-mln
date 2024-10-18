@@ -1,0 +1,5 @@
+outs:
+- md5: 3d39d642304666d7c0832d01c92847b4
+  size: 17446465579
+  hash: md5
+  path: detailed_logs.zip

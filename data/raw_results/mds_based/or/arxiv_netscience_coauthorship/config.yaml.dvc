@@ -1,0 +1,5 @@
+outs:
+- md5: a68a25b7747410a30a99b4f8e30bd29b
+  size: 655
+  hash: md5
+  path: config.yaml

@@ -3,8 +3,10 @@
 A repository to check efficiency of MDS-based seed selection methods in influence maximisation
 problem under Multilayer Linear Threshold Model.
 
-* Authors: Piotr Bródka*, Michał Czuba*, Mingshan Jia**
-* Affiliation: *WUST, Wrocław, Lower Silesia, Poland; **UTS, Sydney, NSW, Australia
+* Authors: Piotr Bródka(¶), Michał Czuba(¶), Mingshan Jia(†), Kaska Gabrys-Musial(†)
+* Affiliation:  
+        (¶) WUST, Wrocław, Lower Silesia, Poland  
+        (†) UTS, Sydney, NSW, Australia
 
 ## Configuration of the runtime
 
@@ -19,7 +21,14 @@ conda activate infmax-mds-ltm-mln
 
 Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Google Drive. Please
 send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, simply execute in
-the shell: `dvc pull`
+the shell: `dvc pull`. **The dataset is large, hence we recommend to pull `zip` files only if
+necessary.** For normal usage it is engouh to pull networks (`dvc pull data/networks`) and raw
+results which are subjects of the analysis (`dvc pull data/raw_results/**/*.csv`).
+
+To extract raw results and pack it into separate `zip` file run:
+```bash
+find data/raw_results -type f \( -name "*.csv" -o -name "*.yaml" \) ! -path "*.zip*" | tar -cvzf archive_name.tar.gz -T -
+```
 
 ## Structure of the repository
 ```
