@@ -15,25 +15,16 @@ conda env create -f env/conda.yaml
 conda activate infmax-mds-ltm-mln
 ```
 
-Then, pull the submodule and install its code:
-
-```bash
-git submodule init && git submodule update
-pip install -e _data_set
-```
-
 ## Data
 
-Dataset is stored in a separate repository bounded with this project as a git submodule. Thus, to
-obtain it you have to pull the data from the DVC remote. In order to access it, please sent a
-request to get  an access via  e-mail (michal.czuba@pwr.edu.pl). Then, simply execute in a shell:
-`cd _data_set && dvc pull nsl_data_sources/raw/multi_layer_networks/*.dvc && cd ..`
+Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Google Drive. Please
+send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, simply execute in
+the shell: `dvc pull`
 
 ## Structure of the repository
 ```
 .
-├── _data_set               -> networks to compute actors' marginal efficiency for + python wrapper
-├── _test_data              -> examplary results of the simulator used in the E2E test
+├── data                    -> networks to compute actors' marginal efficiency for + results
 ├── env                     -> a definition of the runtime environment
 ├── src                     -> scripts to execute experiments according to provided configs
 ├── example_config.yaml     -> an example of the config accepted by the simulator
