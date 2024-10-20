@@ -10,7 +10,7 @@ from src.utils import set_rng_seed
 
 
 @pytest.fixture
-def tcase_config():
+def tcase_ranking_config():
     return {
         "model": {
             "protocols": ["OR", "AND"],
@@ -26,11 +26,35 @@ def tcase_config():
 
 
 @pytest.fixture
-def tcase_csv_names():
+def tcase_greedy_config():
+    return {
+        "model": {
+            "protocols": ["OR", "AND"],
+            "mi_values": [0.5, 0.55, 0.6, 0.65, 0.7],
+            "seed_budgets": [1, 3, 5, 7, 11, 13, 17, 19],
+            "ss_methods": ["g^deg_cd", "g^v_rnk_m"],
+        },
+        "networks": ["toy_network"],
+        "ranking_path": None,
+        "run": {"max_epochs_num": 15, "patience": 2, "repetitions": 2, "random_seed": 1959},
+        "logging": {"full_output_frequency": 1, "compress_to_zip": False, "out_dir": None},
+    }
+
+
+@pytest.fixture
+def tcase_ranking_csv_names():
     return [
         Path("results--ver-1995_1.csv"),
         Path("results--ver-1995_2.csv"),
         Path("results--ver-1995_3.csv"),
+    ]
+
+
+@pytest.fixture
+def tcase_greedy_csv_names():
+    return [
+        Path("results--ver-1959_1.csv"),
+        Path("results--ver-1959_2.csv"),
     ]
 
 
@@ -52,11 +76,20 @@ def check_integrity(test_df: pd.DataFrame) -> None:
     assert test_df["exposed_nb"].equals(test_df["er_temp"].map(lambda x: sum(x)))
 
 
-def test_e2e(tcase_config, tcase_csv_names, tmpdir):
-    tcase_config["logging"]["out_dir"] = str(tmpdir)
-    set_rng_seed(tcase_config["run"]["random_seed"])
-    main.run_experiments(tcase_config)
-    compare_results(Path("_test_data"), Path(tmpdir), tcase_csv_names)
+@pytest.mark.parametrize(
+        "tcase_config, tcase_csv_names",
+        [
+            ("tcase_ranking_config", "tcase_ranking_csv_names"),
+            ("tcase_greedy_config", "tcase_greedy_csv_names"),
+        ]
+)
+def test_e2e(tcase_config, tcase_csv_names, request, tmpdir):
+    config = request.getfixturevalue(tcase_config)
+    csv_names = request.getfixturevalue(tcase_csv_names)
+    config["logging"]["out_dir"] = str(tmpdir)
+    set_rng_seed(config["run"]["random_seed"])
+    main.run_experiments(config)
+    compare_results(Path("_test_data"), Path(tmpdir), csv_names)
 
 
 if __name__ == "__main__":

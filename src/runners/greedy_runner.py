@@ -23,7 +23,7 @@ def handle_step(
     # initialise necessary data regarding the network
     actors_num = net.graph.get_actors_num()
     assert len(ranking) == actors_num
-    greedy_ranking: set[nd.MLNetworkActor] = []
+    greedy_ranking: list[nd.MLNetworkActor] = []
 
     results = []
 
@@ -32,11 +32,12 @@ def handle_step(
 
         # containers for the best actor in the run and its performance
         best_actor = None
-        best_spr = SimulationPartialResult("", 0, max_epochs_num, 0, 0, 0, 0)
+        best_spr = SimulationPartialResult("", 0, float("inf"), 0, 0, 0, 0)
 
         # obtain pool of actors and limit of budget in the run
         eval_seed_budget = 100 * (len(greedy_ranking) + 1) / actors_num
-        available_actors = set(ranking).difference(greedy_ranking)  # TODO 
+        available_actors = [a for a in ranking if a not in greedy_ranking]
+        # available_actors = set(ranking).difference(greedy_ranking) # faster, but nondeter. method
 
         for actor in available_actors:
             step_spr = experiment_step(
@@ -44,7 +45,12 @@ def handle_step(
                 budget=(100 - eval_seed_budget, eval_seed_budget),
                 mi_value=mi,
                 net=net.graph,
-                ranking=[*greedy_ranking, actor, *available_actors.difference({actor})],
+                ranking=[
+                    *greedy_ranking,
+                    actor,
+                    *[a for a in available_actors if a.actor_id != actor.actor_id],
+                ],
+                # ranking=[*greedy_ranking, actor, *available_actors.difference({actor})],  # ditto
                 max_epochs_num=max_epochs_num,
                 patience=patience,
                 out_dir=out_dir,
