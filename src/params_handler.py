@@ -2,13 +2,17 @@
 
 import itertools
 import json
+import math
 
+from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
+from typing import Callable
 
 import network_diffusion as nd
 
 from _data_set.nsl_data_utils.loaders.net_loader import load_network
-from dataclasses import dataclass
+from src.new_selectors import DCBSelector
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -36,19 +40,68 @@ def get_parameter_space(
     mi_values: list[str],
     networks: list[str],
     ss_methods: list[str],
-) -> list[tuple[str, tuple[int, int], float, str, SeedSelector]]:
+) -> tuple[list[tuple[str, tuple[int, int], float, str, str]], str]:
+    runner_type = determine_runner(ss_methods)
+    print(f"Determined runner type: {runner_type}")
+    if runner_type == "greedy":
+        seed_budgets = [max(seed_budgets)]
     seed_budgets_full = [(100 - i, i) for i in seed_budgets]
-    return list(itertools.product(protocols, seed_budgets_full, mi_values, networks, ss_methods))
+    p_space = itertools.product(protocols, seed_budgets_full, mi_values, networks, ss_methods)
+    return list(p_space), runner_type
 
 
+def determine_runner(ss_methods: list[str]):
+    ssm_prefixes = [ssm[:2] == "g^" for ssm in ss_methods]
+    if all(ssm_prefixes):
+        return "greedy"
+    elif not any(ssm_prefixes):
+        return "ranking"
+    raise ValueError(f"Config file shall contain ssm that can be run with one runner {ss_methods}!")
+
+
+def get_logging_frequency(full_output_frequency: int) -> float | int:
+    if full_output_frequency == -1:
+        return math.pi
+    return full_output_frequency
+
+
+def get_for_greedy(get_ss_func: Callable) -> Callable:
+    """Decorate seed selection loader so that it can determine a base ranking for greedy."""
+    @wraps(get_ss_func)
+    def wrapper(selector_name: str) -> nd.seeding.BaseSeedSelector:
+        if selector_name[:2] == "g^":
+            return get_ss_func(selector_name[2:])
+        return get_ss_func(selector_name)
+    return wrapper
+
+
+def get_with_mds(get_ss_func: Callable) -> Callable:
+    """Decorate seed selection loader so that it can optionally use MDS."""
+    @wraps(get_ss_func)
+    def wrapper(selector_name: str) -> nd.seeding.BaseSeedSelector:
+        if selector_name[:2] == "d^":
+            ss_method = get_ss_func(selector_name[2:])
+            return nd.seeding.DriverActorSelector(method=ss_method)
+        return get_ss_func(selector_name)
+    return wrapper
+
+
+@get_for_greedy
+@get_with_mds
 def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
+    if selector_name == "btw":
+        return nd.seeding.BetweennessSelector()
     if selector_name == "cbim":
         return nd.seeding.CBIMSeedselector(merging_idx_threshold=1)
     elif selector_name == "cim":
         return nd.seeding.CIMSeedSelector()
+    elif selector_name == "cls":
+        return nd.seeding.ClosenessSelector()
+    elif selector_name == "dcb":
+        return DCBSelector()
     elif selector_name == "deg_c":
         return nd.seeding.DegreeCentralitySelector()
-    elif selector_name == "deg_c_d":
+    elif selector_name == "deg_cd":
         return nd.seeding.DegreeCentralityDiscountSelector()
     elif selector_name == "k_sh":
         return nd.seeding.KShellSeedSelector()
@@ -91,6 +144,8 @@ def load_seed_selectors(ss_methods: list[str]) -> list[SeedSelector]:
     return ssms
 
 
+# TODO: this function is not able yet to treat rankings for method: g^random and random as the the
+# same one. We can try to implement such functionality to speed up computations
 def compute_rankings(
     seed_selectors: list[SeedSelector],
     networks: list[Network],

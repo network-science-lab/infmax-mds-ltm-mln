@@ -4,7 +4,8 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from runners import params_handler, result_handler, simulation_step, utils
+from src import params_handler, result_handler, utils
+from src.runners  import greedy_runner, ranking_runner
 from tqdm import tqdm
 
 
@@ -14,26 +15,27 @@ RANKINGS_DIR = "rankings"
 
 def run_experiments(config: dict[str, Any]) -> None:
 
-    # load networks, compute rankings and save them
-    nets = params_handler.load_networks(config["networks"])
-    ssms = params_handler.load_seed_selectors(config["model"]["ss_methods"])
-
     # get parameters of the simulation
-    p_space = params_handler.get_parameter_space(
+    p_space, runner_type = params_handler.get_parameter_space(
         protocols=config["model"]["protocols"],
         seed_budgets=config["model"]["seed_budgets"],
         mi_values=config["model"]["mi_values"],
-        networks=[n.name for n in nets],
-        ss_methods=[s.name for s in ssms],
+        networks=config["networks"],
+        ss_methods=config["model"]["ss_methods"],
     )
 
     # get parameters of the simulator
-    logging_freq = config["logging"]["full_output_frequency"]
+    logging_freq = params_handler.get_logging_frequency(config["logging"]["full_output_frequency"])
     max_epochs_num = 1000000000 if (_ := config["run"]["max_epochs_num"]) == -1 else _
     patience = config["run"]["patience"]
     ranking_path = config.get("ranking_path")
     repetitions = config["run"]["repetitions"]
     rng_seed = config["run"]["random_seed"]
+    step_handler = ranking_runner.handle_step if runner_type == "ranking" else greedy_runner.handle_step
+
+    # load networks, initialise ssms
+    nets = params_handler.load_networks(config["networks"])
+    ssms = params_handler.load_seed_selectors(config["model"]["ss_methods"])
 
     # prepare output directories and determine how to store results
     out_dir = Path(config["logging"]["out_dir"])
@@ -59,7 +61,7 @@ def run_experiments(config: dict[str, Any]) -> None:
         rep_results = []
         ver = f"{rng_seed}_{rep}"
 
-        # for each network ans ss method compute a ranking
+        # for each network ans ss method compute a ranking and save it
         rankings = params_handler.compute_rankings(
             seed_selectors=ssms,
             networks=nets,
@@ -87,20 +89,20 @@ def run_experiments(config: dict[str, Any]) -> None:
             )
             ic_name = f"{utils.get_case_name_base(proto, mi, budget[1], ss_method, net_name)}--ver-{ver}"
             try:
-                step_spr = simulation_step.experiment_step(
-                    protocol=proto,
+                net = [net for net in nets if net.name == net_name][0]
+                ranking = rankings[(net.name, ss_method)]
+                investigated_case_results = step_handler(
+                    proto=proto, 
                     budget=budget,
-                    mi_value=mi,
-                    net=[net.graph for net in nets if net.name == net_name][0],
-                    ranking=rankings[(net_name, ss_method)],
+                    mi=mi,
+                    net=net,
+                    ss_method=ss_method,
+                    ranking=ranking,
                     max_epochs_num=max_epochs_num,
                     patience=patience,
-                    out_dir=det_dir / ic_name if rep % logging_freq == 0 else None,
+                    out_dir=det_dir / ic_name if rep % logging_freq == 0 else None
                 )
-                step_sfr = result_handler.SimulationFullResult.enhance_SPR(
-                    step_spr, net_name, proto, budget[1], mi, ss_method
-                )
-                rep_results.append(step_sfr)
+                rep_results.extend(investigated_case_results)
             except BaseException as e:
                 print(f"\nExperiment failed for case: {ic_name}")
                 raise e

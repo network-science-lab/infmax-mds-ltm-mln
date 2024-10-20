@@ -35,7 +35,7 @@ request to get  an access via  e-mail (michal.czuba@pwr.edu.pl). Then, simply ex
 ├── _data_set               -> networks to compute actors' marginal efficiency for + python wrapper
 ├── _test_data              -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
-├── runners                 -> scripts to execute experiments according to provided configs
+├── src                     -> scripts to execute experiments according to provided configs
 ├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── README.md
 ├── run_experiments.py      -> main entrypoint to trigger the pipeline
