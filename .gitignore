@@ -2,4 +2,5 @@
 **/.DS_Store
 .vscode
 example_results
-precomputed_rankings
+precomputed_rankings*
+my_config.yaml

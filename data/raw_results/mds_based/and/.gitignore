@@ -1,5 +1,9 @@
-/small_real/detailed_logs.zip
-/small_real/rankings.zip
-/small_real/results--ver-*.csv
-/small_real/config.yaml
 arxiv_netscience_coauthorship
+l2_course_net/config.yaml
+l2_course_net/detailed_logs.zip
+l2_course_net/rankings.zip
+l2_course_net/results--ver-*.csv
+small_real/config.yaml
+small_real/detailed_logs.zip
+small_real/rankings.zip
+small_real/results--ver-*.csv
