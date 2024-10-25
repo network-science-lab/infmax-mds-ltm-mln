@@ -89,7 +89,7 @@ def test_e2e(tcase_config, tcase_csv_names, request, tmpdir):
     config["logging"]["out_dir"] = str(tmpdir)
     set_rng_seed(config["run"]["random_seed"])
     main.run_experiments(config)
-    compare_results(Path("_test_data"), Path(tmpdir), csv_names)
+    compare_results(Path("data/test"), Path(tmpdir), csv_names)
 
 
 if __name__ == "__main__":
