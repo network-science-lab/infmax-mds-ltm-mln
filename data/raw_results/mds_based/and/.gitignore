@@ -1,4 +1,7 @@
-arxiv_netscience_coauthorship
+arxiv_netscience_coauthorship/config.yaml
+arxiv_netscience_coauthorship/detailed_logs.zip
+arxiv_netscience_coauthorship/rankings.zip
+arxiv_netscience_coauthorship/results--ver-*.csv
 l2_course_net/config.yaml
 l2_course_net/detailed_logs.zip
 l2_course_net/rankings.zip
