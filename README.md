@@ -27,7 +27,7 @@ results which are subjects of the analysis (`dvc pull data/raw_results/**/*.csv`
 
 To extract raw results and pack it into separate `zip` file run:
 ```bash
-find data/raw_results -type f \( -name "*.csv" -o -name "*.yaml" \) ! -path "*.zip*" | tar -cvzf archive_name.tar.gz -T -
+find data/raw_results -type f \( -name "*.csv" -o -name "*.yaml" \) ! -path "*.zip*" | tar -cvzf raw_results.tar.gz -T -
 ```
 
 ## Structure of the repository
