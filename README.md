@@ -23,12 +23,11 @@ Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Googl
 send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, simply execute in
 the shell: `dvc pull`. **The dataset is large, hence we recommend to pull `zip` files only if
 necessary.** For normal usage it is engouh to pull networks (`dvc pull data/networks`) and raw
-results which are subjects of the analysis (`dvc pull data/raw_results/**/*.csv`).
+results which are subjects of the analysis (that can be done in two ways - either pull all results
+and kill the disk: `dvc pull data/raw_results` or just pre-preprocessed data with configs:
+`sh data/get_raw_results_slim.sh`).
 
-To extract raw results and pack it into separate `zip` file run:
-```bash
-find data/raw_results -type f \( -name "*.csv" -o -name "*.yaml" \) ! -path "*.zip*" | tar -cvzf raw_results.tar.gz -T -
-```
+To extract raw results and pack it into separate `zip` file run: `sh daat/zip_raw_results_slim.sh`
 
 ## Structure of the repository
 ```
