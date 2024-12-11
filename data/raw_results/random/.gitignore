@@ -1,0 +1,16 @@
+and/config.yaml
+and/detailed_logs.zip
+and/rankings.zip
+and/results--*.csv
+and/l2_course_net/config.yaml
+and/l2_course_net/detailed_logs.zip
+and/l2_course_net/rankings.zip
+and/l2_course_net/results--*.csv
+or/config.yaml
+or/detailed_logs.zip
+or/rankings.zip
+or/results--*.csv
+or/l2_course_net/config.yaml
+or/l2_course_net/detailed_logs.zip
+or/l2_course_net/rankings.zip
+or/l2_course_net/results--*.csv

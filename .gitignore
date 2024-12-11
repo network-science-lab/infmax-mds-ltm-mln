@@ -1,4 +1,5 @@
 **/__pycache__
 **/.DS_Store
-_example_results
 .vscode
+example_results
+my_config.yaml

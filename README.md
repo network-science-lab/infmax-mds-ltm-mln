@@ -3,8 +3,10 @@
 A repository to check efficiency of MDS-based seed selection methods in influence maximisation
 problem under Multilayer Linear Threshold Model.
 
-* Authors: Piotr Bródka*, Michał Czuba*, Mingshan Jia**
-* Affiliation: *WUST, Wrocław, Lower Silesia, Poland; **UTS, Sydney, NSW, Australia
+* Authors: Piotr Bródka(¶), Michał Czuba(¶), Mingshan Jia(†), Kaska Gabrys-Musial(†)
+* Affiliation:  
+        (¶) WUST, Wrocław, Lower Silesia, Poland  
+        (†) UTS, Sydney, NSW, Australia
 
 ## Configuration of the runtime
 
@@ -15,25 +17,22 @@ conda env create -f env/conda.yaml
 conda activate infmax-mds-ltm-mln
 ```
 
-Then, pull the submodule and install its code:
-
-```bash
-git submodule init && git submodule update
-pip install -e _data_set
-```
-
 ## Data
 
-Dataset is stored in a separate repository bounded with this project as a git submodule. Thus, to
-obtain it you have to pull the data from the DVC remote. In order to access it, please sent a
-request to get  an access via  e-mail (michal.czuba@pwr.edu.pl). Then, simply execute in a shell:
-`cd _data_set && dvc pull nsl_data_sources/raw/multi_layer_networks/*.dvc && cd ..`
+Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Google Drive. Please
+send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, simply execute in
+the shell: `dvc pull`. **The dataset is large, hence we recommend to pull `zip` files only if
+necessary.** For normal usage it is engouh to pull networks (`dvc pull data/networks`) and raw
+results which are subjects of the analysis (that can be done in two ways - either pull all results
+and kill the disk: `dvc pull data/raw_results` or just pre-preprocessed data with configs:
+`sh data/get_raw_results_slim.sh`).
+
+To extract raw results and pack it into separate `zip` file run: `sh daat/zip_raw_results_slim.sh`
 
 ## Structure of the repository
 ```
 .
-├── _data_set               -> networks to compute actors' marginal efficiency for + python wrapper
-├── _test_data              -> examplary results of the simulator used in the E2E test
+├── data                    -> networks to compute actors' marginal efficiency for + results
 ├── env                     -> a definition of the runtime environment
 ├── src                     -> scripts to execute experiments according to provided configs
 ├── example_config.yaml     -> an example of the config accepted by the simulator

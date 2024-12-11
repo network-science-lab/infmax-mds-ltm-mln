@@ -11,7 +11,7 @@ from typing import Callable
 
 import network_diffusion as nd
 
-from _data_set.nsl_data_utils.loaders.net_loader import load_network
+from src.loaders.net_loader import load_network
 from src.new_selectors import DCBSelector
 
 
