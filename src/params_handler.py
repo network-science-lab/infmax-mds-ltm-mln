@@ -12,7 +12,7 @@ from typing import Callable
 import network_diffusion as nd
 
 from src.loaders.net_loader import load_network
-from src.new_selectors import DCBSelector
+from src.new_selectors import DCBSelector, DriverActorLimitedSelector
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -81,7 +81,7 @@ def get_with_mds(get_ss_func: Callable) -> Callable:
     def wrapper(selector_name: str) -> nd.seeding.BaseSeedSelector:
         if selector_name[:2] == "d^":
             ss_method = get_ss_func(selector_name[2:])
-            return nd.seeding.DriverActorSelector(method=ss_method)
+            return DriverActorLimitedSelector(method=ss_method, return_only_mds=True)
         return get_ss_func(selector_name)
     return wrapper
 

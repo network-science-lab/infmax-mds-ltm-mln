@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src import params_handler, result_handler, utils
+from src.mltm import MDSError
 from src.runners  import greedy_runner, ranking_runner
 from tqdm import tqdm
 
@@ -103,7 +104,10 @@ def run_experiments(config: dict[str, Any]) -> None:
                     out_dir=det_dir / ic_name if rep % logging_freq == 0 else None
                 )
                 rep_results.extend(investigated_case_results)
-            except BaseException as e:
+            except MDSError as e:
+                print(f"\n\tBudget too big for case: {ic_name}")
+                continue
+            except BaseException:
                 print(f"\nExperiment failed for case: {ic_name}")
                 raise e
         

@@ -8,6 +8,7 @@ import network_diffusion as nd
 
 from bidict import bidict
 from network_diffusion.utils import BOLD_UNDERLINE, THIN_UNDERLINE
+from network_diffusion.mln.driver_actors import compute_driver_actors
 
 
 class DCBSelector(nd.seeding.BaseSeedSelector):
@@ -39,8 +40,61 @@ class DCBSelector(nd.seeding.BaseSeedSelector):
         return [actor for actor, _ in sorted(ranking_dict.items(), reverse=True, key=lambda x: x[1])]
 
 
+class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
+    """Driver Actor based seed selector."""
+
+    def __init__(self, method: nd.seeding.BaseSeedSelector | None, return_only_mds: bool = True) -> None:
+        """
+        Initialise object.
+
+        :param method: a method to sort driver actors; if not provided it will be set to
+            `nd.seeding.RandomSeedSelector()`.
+        :param return_only_mds: a flag wether return only minimal dominating which is not padded to
+            the lenght equals a total number of actors.
+        """
+        super().__init__()
+        if isinstance(method, nd.seeding.DriverActorSelector):
+            raise AttributeError(f"Argument 'method' cannot be {self.__class__.__name__}!")
+        if not method:
+            method = nd.seeding.RandomSeedSelector()
+        self.selector = method
+        self.return_only_mds = return_only_mds
+
+    def __str__(self) -> str:
+        slc = self.selector
+        s_str = "driver actor" if slc is None else f"driver actor + {slc.__class__.__name__}"
+        return f"{BOLD_UNDERLINE}\nseed selection method\n{THIN_UNDERLINE}\n{s_str}\n{BOLD_UNDERLINE}\n"
+
+    def _calculate_ranking_list(self, graph: nx.Graph) -> list[Any]:
+        raise NotImplementedError("Nodewise ranking list cannot be computed for this class!")
+
+    def actorwise(self, net: nd.mln.MultilayerNetwork) -> list[nd.mln.MLNetworkActor]:
+        """Return a list of driver actors for a multilayer network."""
+        driver_actors = compute_driver_actors(net)
+        all_actors_sorted = self.selector.actorwise(net)
+        return self._reorder_seeds(driver_actors, all_actors_sorted)
+
+    def _reorder_seeds(
+        self, driver_actors: list[nd.mln.MLNetworkActor], all_actors: list[nd.mln.MLNetworkActor],
+    ) -> list[nd.mln.MLNetworkActor]:
+        """Return a list of actor ids, where driver actors in the first."""
+        driver_actors_sorted, inferior_actors_sorted = [], []
+        for actor in all_actors:
+            if actor in driver_actors:
+                driver_actors_sorted.append(actor)
+            else:
+                inferior_actors_sorted.append(actor)
+        assert len(inferior_actors_sorted) + len(driver_actors_sorted) == len(all_actors)
+        if self.return_only_mds:
+            return driver_actors_sorted
+        return [*driver_actors_sorted, *inferior_actors_sorted]
+
+
 if __name__ == "__main__":
     net = nd.mln.functions.get_toy_network_piotr()
     print(net)
-    print(DCBSelector.get_mean_DCB(net))
-    print(DCBSelector()(net, actorwise=True))
+    # print(DCBSelector.get_mean_DCB(net))
+    # print(DCBSelector()(net, actorwise=True))
+    mds_selector = DriverActorLimitedSelector(method=nd.seeding.DegreeCentralitySelector())
+    print(mds_selector)
+    print(mds_selector(net, actorwise=True))
