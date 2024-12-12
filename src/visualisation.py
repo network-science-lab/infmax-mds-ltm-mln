@@ -1,13 +1,15 @@
-import itertools
+from collections import Counter
+from itertools import combinations, product
 from pathlib import Path
 from typing import Generator
-from matplotlib import pyplot as plt
 
 import matplotlib
 import matplotlib.ticker
 import numpy as np
 import pandas as pd
 
+from matplotlib import pyplot as plt
+from scipy.stats import entropy
 
 
 class Results:
@@ -52,6 +54,49 @@ class Results:
     def get_actors_nb(slice_df: np.ndarray) -> np.ndarray:
         return (slice_df.iloc[0]["exposed_nb"] + slice_df.iloc[0]["unexposed_nb"]).astype(int).item()
 
+    def obtain_seed_sets_for_simulated_case(
+        self,
+        raw_df: pd.DataFrame,
+        network: str,
+        protocol: str,
+        seed_budget: int,
+        mi_value: float,
+        ss_method: str
+    ) -> list[set[str]]:
+        seed_sets = raw_df.loc[
+            (self.raw_df["network"] == network) &
+            (self.raw_df["protocol"] == protocol) &
+            (self.raw_df["seed_budget"] == seed_budget) &
+            (self.raw_df["mi_value"] == mi_value) &
+            (self.raw_df["ss_method"] == ss_method)
+        ]["seed_ids"].to_list()
+        return [set(seed_set.split(";")) for seed_set in seed_sets]
+
+
+def get_entropy(sets: list[set[str]]) -> float:
+    """Get entropy over list of sets."""
+    all_elements = [element for s in sets for element in s]
+    freq = Counter(all_elements)
+    probabilities = [count / sum(freq.values()) for count in freq.values()]
+    return entropy(probabilities, base=2)
+
+
+def analyse_set_similarity(sets: list[set[str]]) -> dict[str, float]:
+    """Compute average Jaccard similarities and fratcion of unique sets."""
+    if len(sets) == 0:
+        return {"unique_sets_ratio": None, "jaccard_similarity": None, "entropy": None}
+    unique_sets = set(frozenset(s) for s in sets)
+    total_jaccard, num_comparisons = 0, 0
+    for set_a, set_b in combinations(unique_sets, 2):
+        jaccard = len(set_a.intersection(set_b)) / len(set_a.union(set_b))
+        total_jaccard += jaccard
+        num_comparisons += 1
+    avg_jaccard = total_jaccard / num_comparisons if num_comparisons > 0 else None
+    return {
+        "unique_sets_ratio": len(unique_sets) / len(sets),
+        "jaccard_similarity": avg_jaccard,
+        "entropy": get_entropy(sets),
+    }
 
 
 class Plotter:
@@ -92,13 +137,13 @@ class Plotter:
     ]
 
     def yield_page(self) -> Generator[tuple[str, str, str], None, None]:
-        for and_case in itertools.product(
+        for and_case in product(
             self._networks,
             [self._protocol_and],
             self._ss_methods,
         ):
             yield and_case
-        for or_case in itertools.product(
+        for or_case in product(
             self._networks,
             [self._protocol_or],
             self._ss_methods,
@@ -107,13 +152,13 @@ class Plotter:
     
     def yield_figure(self, protocol: str) -> Generator[tuple[int, float], None, None]:
         if protocol == "AND":
-            for and_case in itertools.product(
+            for and_case in product(
                 self._seed_budgets_and,
                 self._mi_values,
             ):
                 yield and_case
         elif protocol == "OR":
-            for or_case in itertools.product(
+            for or_case in product(
                 self._seed_budgets_or,
                 self._mi_values,
             ):
