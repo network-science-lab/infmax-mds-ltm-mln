@@ -2,3 +2,4 @@
 **/*.yaml
 **/*.zip
 **/*.zip
+/expositions.pdf

@@ -61,25 +61,34 @@ class Plotter:
     _seed_budgets_and = [15, 20, 25, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
     _seed_budgets_or = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
     _mi_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    _ss_methods = ['deg_c', 'deg_cd', 'nghb_sd', 'p_rnk', 'p_rnk_m', 'random', 'v_rnk', 'v_rnk_m']
+    _ss_methods = [
+        "deg_c",
+        # "deg_cd",
+        "nghb_sd",
+        # "p_rnk",
+        # "p_rnk_m",
+        "random",
+        # "v_rnk",
+        # "v_rnk_m",
+    ]
     _networks = [   
-        'arxiv_netscience_coauthorship',
-        'aucs',
-        'ckm_physicians',
-        'er2',
-        'er3',
-        'er5',
-        'eu_transportation',
-        'eu_transport_klm',
-        'lazega', 
-        'l2_course_net_1',
-        'l2_course_net_2',
-        'l2_course_net_3',
-        'sf2',
-        'sf3',
-        'sf5',
-        'toy_network',
-        'timik1q2009',
+        # "arxiv_netscience_coauthorship",
+        "aucs",
+        "ckm_physicians",
+        # "er2",
+        # "er3",
+        # "er5",
+        "eu_transportation",
+        # "eu_transport_klm",
+        "lazega",
+        "l2_course_net_1",
+        # "l2_course_net_2",
+        # "l2_course_net_3",
+        # "sf2",
+        # "sf3",
+        # "sf5",
+        # "toy_network",
+        # "timik1q2009",
     ]
 
     def yield_page(self) -> Generator[tuple[str, str, str], None, None]:
@@ -130,7 +139,7 @@ class Plotter:
         seed_budget: int,
         ax: matplotlib.axes.Axes,
     ) -> None:
-        plt.rc('legend', fontsize=8)
+        plt.rc("legend", fontsize=8)
         x_max = max(len(record_mds["avg"]), len(record_nml["avg"])) - 1
         self.plot_avg_with_std(record_mds, ax, "MDS", "greenyellow")
         self.plot_avg_with_std(record_nml, ax, "NML", "sandybrown")
