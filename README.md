@@ -15,6 +15,7 @@ First, initialise the enviornment:
 ```bash
 conda env create -f env/conda.yaml
 conda activate infmax-mds-ltm-mln
+python -m ipykernel install --user --name=infmax-mds-ltm-mln
 ```
 
 ## Data
