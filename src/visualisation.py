@@ -23,9 +23,9 @@ class Results:
         self.raw_df = self.read_raw_df(raw_results_path)
 
     @staticmethod
-    def read_raw_df(raw_results_path: str) -> pd.DataFrame:
+    def read_raw_df(raw_result_paths: list[Path]) -> pd.DataFrame:
         dfs = []
-        for csv_path in list(Path(raw_results_path).glob("**/*.csv")):
+        for csv_path in raw_result_paths:
             csv_df = pd.read_csv(csv_path)
             dfs.append(csv_df)
         return pd.concat(dfs, axis=0, ignore_index=True)
@@ -83,8 +83,8 @@ class JSONParser:
     @staticmethod
     def parse_json_name(json_name):
         """Parse simulation params and match only those which utilised MDS."""
-        # pattern = r"^ss-(?P<ss_method>d\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
-        pattern = r"^ss-(?P<ss_method>.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
+        pattern = r"^ss-(?P<ss_method>d\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
+        # pattern = r"^ss-(?P<ss_method>.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
         match = re.match(pattern, json_name)
         if match:
             return match.groupdict()
@@ -128,7 +128,7 @@ def analyse_set_similarity(sets: list[set[str]]) -> dict[str, float]:
         num_comparisons += 1
     avg_jaccard = total_jaccard / num_comparisons if num_comparisons > 0 else None
     return {
-        "unique_sets_ratio": len(unique_sets) / len(sets),
+        "unique_sets_ratio": f"{len(unique_sets)} / {len(sets)}",
         "jaccard_similarity": avg_jaccard,
         "entropy": get_entropy(sets),
     }
@@ -237,8 +237,3 @@ class Plotter:
     @staticmethod
     def plot_dummy_fig(mi_value: float, seed_budget: int, ax: matplotlib.axes.Axes) -> None:
         ax.set_title(f"No results for mu={mi_value}, |S|={seed_budget}")
-
-
-
-class MDSRankings:
-    ...
