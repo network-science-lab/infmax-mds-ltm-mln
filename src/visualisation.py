@@ -1,3 +1,7 @@
+import json
+import re
+import zipfile
+
 from collections import Counter
 from itertools import combinations, product
 from pathlib import Path
@@ -5,6 +9,7 @@ from typing import Generator
 
 import matplotlib
 import matplotlib.ticker
+import network_diffusion as nd
 import numpy as np
 import pandas as pd
 
@@ -71,6 +76,36 @@ class Results:
             (self.raw_df["ss_method"] == ss_method)
         ]["seed_ids"].to_list()
         return [set(seed_set.split(";")) for seed_set in seed_sets]
+
+
+class JSONParser:
+
+    @staticmethod
+    def parse_json_name(json_name):
+        """Parse simulation params and match only those which utilised MDS."""
+        # pattern = r"^ss-(?P<ss_method>d\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
+        pattern = r"^ss-(?P<ss_method>.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
+        match = re.match(pattern, json_name)
+        if match:
+            return match.groupdict()
+        return {}
+
+    def read_minimal_dominating_sets(self, zip_path):
+        """Read used MDS in simulations."""
+        minimal_dominating_sets = []
+        with zipfile.ZipFile(zip_path, "r") as z:
+            for file_name in z.namelist():
+                simulation_params = self.parse_json_name(file_name)
+                if simulation_params:
+                    try:
+                        with z.open(file_name) as f:
+                            ranking_dict = json.load(f)
+                            mds = [nd.MLNetworkActor.from_dict(rd).actor_id for rd in ranking_dict]
+                            simulation_params["mds"] = mds
+                            minimal_dominating_sets.append(simulation_params)
+                    except json.JSONDecodeError:
+                        print(f"Something went wrong in: {file_name}")
+        return minimal_dominating_sets
 
 
 def get_entropy(sets: list[set[str]]) -> float:
@@ -202,3 +237,8 @@ class Plotter:
     @staticmethod
     def plot_dummy_fig(mi_value: float, seed_budget: int, ax: matplotlib.axes.Axes) -> None:
         ax.set_title(f"No results for mu={mi_value}, |S|={seed_budget}")
+
+
+
+class MDSRankings:
+    ...
