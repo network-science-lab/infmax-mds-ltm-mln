@@ -29,9 +29,72 @@ def is_dominating_set(candidate_ds: set[nd.MLNetworkActor], network: nd.Multilay
     return True
 
 
+# ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### #####
+# Contents copied from network_diffusion 0.17.0 and modified with actor-shuffling step
+
+import random
+from copy import deepcopy
+from typing import Any
+
+
+def compute_driver_actors(net: nd.MultilayerNetwork) -> list[nd.MLNetworkActor]:
+    """Return driver actors for a given network."""
+    min_dominating_set: set[Any] = set()
+    for layer in net.layers:
+        min_dominating_set = minimum_dominating_set_with_initial(
+            net, layer, min_dominating_set
+        )
+
+    return [net.get_actor(actor_id) for actor_id in min_dominating_set]
+
+
+def minimum_dominating_set_with_initial(
+    net: nd.MultilayerNetwork, layer: str, initial_set: set[Any]
+) -> set[int]:
+    """
+    Return a dominating set that includes the initial set.
+
+    net: MultilayerNetwork
+    layer: layer name
+    initial_set: set of nodes
+    """
+    actor_ids = [x.actor_id for x in net.get_actors()]
+    random.shuffle(actor_ids)  # this line was added
+    if not set(initial_set).issubset(set(actor_ids)):
+        raise ValueError("Initial set must be a subset of net's actors")
+
+    dominating_set = set(initial_set)
+
+    net_layer = net.layers[layer]
+    isolated = set(actor_ids) - set(net_layer.nodes())
+    dominating_set = dominating_set | isolated
+    dominated = deepcopy(dominating_set)
+
+    layer_nodes = list(net_layer.nodes())  # this line was added
+    random.shuffle(layer_nodes)  # this line was added
+
+    for node_u in dominating_set:
+        if node_u in net_layer.nodes:
+            dominated.update(net_layer[node_u])
+
+    while len(dominated) < len(net):
+        # Choose a node which dominates the maximum number of undominated nodes
+        node_u = max(
+            layer_nodes, key=lambda x: len(set(net_layer[x]) - dominated)  # this line was modified
+        )
+        dominating_set.add(node_u)
+        dominated.add(node_u)
+        dominated.update(net_layer[node_u])
+
+    return dominating_set
+
+# ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### #####
+
+
 if __name__ == "__main__":
     l2c_1  = nd.tpn.get_l2_course_net(node_features=False, edge_features=False, directed=False)[0]
-    mds = nd.mln.driver_actors.compute_driver_actors(l2c_1)
+    # mds = nd.mln.driver_actors.compute_driver_actors(l2c_1)
+    mds = compute_driver_actors(l2c_1)
     # mds = set(l2c_1.get_actors())
     # mds.pop()
     if is_dominating_set(candidate_ds=mds, network=l2c_1):

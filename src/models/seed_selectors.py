@@ -8,9 +8,9 @@ import network_diffusion as nd
 
 from bidict import bidict
 from network_diffusion.utils import BOLD_UNDERLINE, THIN_UNDERLINE
-from network_diffusion.mln.driver_actors import compute_driver_actors
+# from network_diffusion.mln.driver_actors import compute_driver_actors
 
-from src.models.mds import is_dominating_set
+from src.models.mds import is_dominating_set, compute_driver_actors
 
 class DCBSelector(nd.seeding.BaseSeedSelector):
     """
