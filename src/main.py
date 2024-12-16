@@ -31,7 +31,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     patience = config["run"]["patience"]
     ranking_path = config.get("ranking_path")
     repetitions = config["run"]["repetitions"]
-    rng_seed = config["run"]["random_seed"]
+    rng_seed = "_"if config["run"].get("random_seed") is None else config["run"]["random_seed"]
     step_handler = ranking_runner.handle_step if runner_type == "ranking" else greedy_runner.handle_step
 
     # load networks, initialise ssms
