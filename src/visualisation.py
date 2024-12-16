@@ -1,7 +1,6 @@
 import json
 import re
 import zipfile
-
 from collections import Counter
 from itertools import combinations, product
 from pathlib import Path
@@ -12,7 +11,6 @@ import matplotlib.ticker
 import network_diffusion as nd
 import numpy as np
 import pandas as pd
-
 from matplotlib import pyplot as plt
 from scipy.stats import entropy
 

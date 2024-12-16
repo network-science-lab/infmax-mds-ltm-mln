@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import network_diffusion as nd
+
 from src.params_handler import Network
 from src.result_handler import SimulationFullResult, SimulationPartialResult
 from src.runners.simulation_step import experiment_step

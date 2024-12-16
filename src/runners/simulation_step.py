@@ -5,7 +5,7 @@ from pathlib import Path
 import network_diffusion as nd
 
 from src.result_handler import SimulationPartialResult, extract_simulation_result
-from src.mltm import MDSLimitedMLTModel
+from src.models.mltm import MDSLimitedMLTModel
 
 def experiment_step(
     protocol: str,

@@ -4,10 +4,11 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from src import params_handler, result_handler, utils
-from src.mltm import MDSError
-from src.runners  import greedy_runner, ranking_runner
 from tqdm import tqdm
+
+from src import params_handler, result_handler, utils
+from src.models.mltm import MDSError
+from src.runners  import greedy_runner, ranking_runner
 
 
 DET_LOGS_DIR = "detailed_logs"

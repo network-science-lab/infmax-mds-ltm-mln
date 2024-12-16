@@ -3,7 +3,6 @@
 import itertools
 import json
 import math
-
 from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
@@ -12,7 +11,7 @@ from typing import Callable
 import network_diffusion as nd
 
 from src.loaders.net_loader import load_network
-from src.new_selectors import DCBSelector, DriverActorLimitedSelector
+from src.models.seed_selectors import DCBSelector, DriverActorLimitedSelector
 
 
 class JSONEncoder(json.JSONEncoder):

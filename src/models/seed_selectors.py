@@ -10,6 +10,7 @@ from bidict import bidict
 from network_diffusion.utils import BOLD_UNDERLINE, THIN_UNDERLINE
 from network_diffusion.mln.driver_actors import compute_driver_actors
 
+from src.models.mds import is_dominating_set
 
 class DCBSelector(nd.seeding.BaseSeedSelector):
     """
@@ -71,6 +72,10 @@ class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
     def actorwise(self, net: nd.mln.MultilayerNetwork) -> list[nd.mln.MLNetworkActor]:
         """Return a list of driver actors for a multilayer network."""
         driver_actors = compute_driver_actors(net)
+        if not is_dominating_set(candidate_ds=driver_actors, network=net):
+            raise ValueError(
+                f"A seed set: {set(a.actor_id for a in driver_actors)} is not dominating for {net}!"
+            )
         all_actors_sorted = self.selector.actorwise(net)
         return self._reorder_seeds(driver_actors, all_actors_sorted)
 
