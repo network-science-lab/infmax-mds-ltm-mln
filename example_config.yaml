@@ -35,6 +35,9 @@ networks: [
   # "eu_transportation",
   # "eu_transport_klm",
   # "lazega",
+  # "l2_course_net_1",
+  # "l2_course_net_2",
+  # "l2_course_net_3",
   # "er2",
   # "er3",
   # "er5",
@@ -57,4 +60,4 @@ run:
 logging:
   full_output_frequency: -1  # freq. of logging very detailed data form simulated cases
   compress_to_zip: True  # wether compress ot zip "detailed_logs" and "rankings"
-  out_dir: "./example_results"  # directory where to save results
+  out_dir: "./example_results"  # dir to save results in, to send them to hell use e.g. "/dev/null"
