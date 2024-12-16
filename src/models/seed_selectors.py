@@ -74,8 +74,10 @@ class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
         driver_actors = compute_driver_actors(net)
         if not is_dominating_set(candidate_ds=driver_actors, network=net):
             raise ValueError(
-                f"A seed set: {set(a.actor_id for a in driver_actors)} is not dominating for {net}!"
+                f"A seed set: {set(a.actor_id for a in driver_actors)} does not dominate "
+                f"a following network:\n {net}!"
             )
+
         all_actors_sorted = self.selector.actorwise(net)
         return self._reorder_seeds(driver_actors, all_actors_sorted)
 

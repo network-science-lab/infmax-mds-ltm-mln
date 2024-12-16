@@ -40,8 +40,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     ssms = params_handler.load_seed_selectors(config["model"]["ss_methods"])
 
     # prepare output directories and determine how to store results
-    out_dir = Path(config["logging"]["out_dir"])
-    out_dir.mkdir(exist_ok=True, parents=True)
+    out_dir = params_handler.create_out_dir(config["logging"]["out_dir"])
     det_dir = out_dir / DET_LOGS_DIR
     det_dir.mkdir(exist_ok=True, parents=True)
     rnk_dir = out_dir / RANKINGS_DIR

@@ -3,6 +3,7 @@
 import itertools
 import json
 import math
+import tempfile
 from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
@@ -62,6 +63,16 @@ def get_logging_frequency(full_output_frequency: int) -> float | int:
     if full_output_frequency == -1:
         return math.pi
     return full_output_frequency
+
+
+def create_out_dir(out_dir: str) -> Path:
+    try:
+        out_dir = Path(out_dir)
+        out_dir.mkdir(exist_ok=True, parents=True)
+    except FileExistsError:
+        print("Redirecting output to hell...")
+        out_dir = Path(tempfile.mkdtemp())
+    return out_dir
 
 
 def get_for_greedy(get_ss_func: Callable) -> Callable:
