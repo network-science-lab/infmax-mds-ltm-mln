@@ -59,7 +59,7 @@ def minimum_dominating_set_with_initial(
     initial_set: set of nodes
     """
     actor_ids = [x.actor_id for x in net.get_actors()]
-    random.shuffle(actor_ids)  # this line was added
+    random.shuffle(actor_ids)
     if not set(initial_set).issubset(set(actor_ids)):
         raise ValueError("Initial set must be a subset of net's actors")
 
@@ -70,18 +70,23 @@ def minimum_dominating_set_with_initial(
     dominating_set = dominating_set | isolated
     dominated = deepcopy(dominating_set)
 
-    layer_nodes = list(net_layer.nodes())  # this line was added
-    random.shuffle(layer_nodes)  # this line was added
+    layer_nodes = list(net_layer.nodes())
+    random.shuffle(layer_nodes)
 
     for node_u in dominating_set:
         if node_u in net_layer.nodes:
             dominated.update(net_layer[node_u])
 
     while len(dominated) < len(net):
+        node_dominate_nb = {x: len(set(net_layer[x]) - dominated) for x in layer_nodes}
+
+        # If current dominated set cannot be enhanced anymore and there're still nondominated nodes
+        if sum(node_dominate_nb.values()) == 0:
+            to_dominate = set(net[layer].nodes).difference(dominated)
+            return dominating_set.union(to_dominate)
+
         # Choose a node which dominates the maximum number of undominated nodes
-        node_u = max(
-            layer_nodes, key=lambda x: len(set(net_layer[x]) - dominated)  # this line was modified
-        )
+        node_u = max(node_dominate_nb.keys(), key=lambda x: node_dominate_nb[x])
         dominating_set.add(node_u)
         dominated.add(node_u)
         dominated.update(net_layer[node_u])
