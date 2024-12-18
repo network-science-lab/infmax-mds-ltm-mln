@@ -1,7 +1,5 @@
 **/__pycache__
 **/.DS_Store
 .vscode
+data/experiment_setup
 example_results
-my_config.yaml
-config_and.yaml
-config_or.yaml

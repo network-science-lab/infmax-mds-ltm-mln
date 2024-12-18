@@ -136,39 +136,30 @@ class Plotter:
 
     _protocol_and = "AND"
     _protocol_or = "OR"
-    _seed_budgets_and = [15, 20, 25, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
-    _seed_budgets_or = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
+    _seed_budgets_and = [15, 20, 25, 30, 35]
+    _seed_budgets_or = [5, 10, 15, 20, 25]
     _mi_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     _ss_methods = [
         "deg_c",
-        # "deg_cd",
+        "deg_cd",
+        "nghb_1s",
         "nghb_sd",
-        # "p_rnk",
-        # "p_rnk_m",
         "random",
-        # "v_rnk",
-        # "v_rnk_m",
     ]
     _networks = [   
-        # "arxiv_netscience_coauthorship",
         "aucs",
         "ckm_physicians",
         "er1",
         "er2",
         "er3",
         "er5",
-        "eu_transportation",
-        "eu_transport_klm",
         "lazega",
         "l2_course_net_1",
-        # "l2_course_net_2",
-        # "l2_course_net_3",
         "sf1",
         "sf2",
         "sf3",
         "sf5",
-        # "toy_network",
-        # "timik1q2009",
+        "timik1q2009",
     ]
 
     def yield_page(self) -> Generator[tuple[str, str, str], None, None]:
