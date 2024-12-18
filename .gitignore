@@ -1,5 +1,6 @@
 **/__pycache__
 **/.DS_Store
+.idea
 .vscode
 data/experiment_setup
 example_results
