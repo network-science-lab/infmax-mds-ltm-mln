@@ -3,7 +3,7 @@
 A repository to check efficiency of MDS-based seed selection methods in influence maximisation
 problem under Multilayer Linear Threshold Model.
 
-* Authors: Piotr Bródka(¶), Michał Czuba(¶), Mingshan Jia(†), Kaska Gabrys-Musial(†)
+* Authors: Michał Czuba(¶†), Mingshan Jia(†), Kaska Gabrys-Musial(†), Piotr Bródka(¶†)
 * Affiliation:  
         (¶) WUST, Wrocław, Lower Silesia, Poland  
         (†) UTS, Sydney, NSW, Australia
@@ -28,7 +28,7 @@ results which are subjects of the analysis (that can be done in two ways - eithe
 and kill the disk: `dvc pull data/raw_results` or just pre-preprocessed data with configs:
 `sh data/get_raw_results_slim.sh`).
 
-To extract raw results and pack it into separate `zip` file run: `sh daat/zip_raw_results_slim.sh`
+To extract raw results and pack it into separate `zip` file run: `sh data/zip_raw_results_slim.sh`
 
 ## Structure of the repository
 ```
@@ -39,7 +39,8 @@ To extract raw results and pack it into separate `zip` file run: `sh daat/zip_ra
 ├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── README.md
 ├── run_experiments.py      -> main entrypoint to trigger the pipeline
-└── test_reproducibility.py -> E2E test to prove that results can be repeated
+├── test_reproducibility.py -> E2E test to prove that results can be repeated
+└── visualise.ipynb         -> a notebook to produce results analysis
 ```
 
 ## Running the pipeline
@@ -71,7 +72,12 @@ simulation: `(exposed_nb - seed_nb) / (total_actor_nb - seed_nb) * 100%`
 The simulator will also save provided configuraiton file, rankings of actors used in computations,
 and detailed logs of evaluated cases whose index divided modulo by `full_output_frequency` equals 0.
 
-
 ## Results reproducibility
 
 Results are supposed to be fully reproducable. There is a test for that: `test_reproducibility.py`.
+
+## Obtaining analysis of results
+
+To process raw results please simply execute the notebook. Note, that it can take while to get all
+outcomes. Threfore, in order to obtain complete visualisations we recommend to execute the notebook
+in non-interactive mode: `jupyter nbconvert visualise.ipynb --to python --execute`
