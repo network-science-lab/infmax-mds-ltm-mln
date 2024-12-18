@@ -1,0 +1,5 @@
+outs:
+- md5: 13e47f6568d7e15b19827834242f4b08
+  size: 1363176
+  hash: md5
+  path: similarities.csv

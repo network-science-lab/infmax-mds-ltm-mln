@@ -4,9 +4,11 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from src import params_handler, result_handler, utils
-from src.runners  import greedy_runner, ranking_runner
 from tqdm import tqdm
+
+from src import params_handler, result_handler, utils
+from src.models.mltm import MDSError
+from src.runners  import greedy_runner, ranking_runner
 
 
 DET_LOGS_DIR = "detailed_logs"
@@ -30,7 +32,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     patience = config["run"]["patience"]
     ranking_path = config.get("ranking_path")
     repetitions = config["run"]["repetitions"]
-    rng_seed = config["run"]["random_seed"]
+    rng_seed = "_"if config["run"].get("random_seed") is None else config["run"]["random_seed"]
     step_handler = ranking_runner.handle_step if runner_type == "ranking" else greedy_runner.handle_step
 
     # load networks, initialise ssms
@@ -38,8 +40,7 @@ def run_experiments(config: dict[str, Any]) -> None:
     ssms = params_handler.load_seed_selectors(config["model"]["ss_methods"])
 
     # prepare output directories and determine how to store results
-    out_dir = Path(config["logging"]["out_dir"])
-    out_dir.mkdir(exist_ok=True, parents=True)
+    out_dir = params_handler.create_out_dir(config["logging"]["out_dir"])
     det_dir = out_dir / DET_LOGS_DIR
     det_dir.mkdir(exist_ok=True, parents=True)
     rnk_dir = out_dir / RANKINGS_DIR
@@ -103,7 +104,10 @@ def run_experiments(config: dict[str, Any]) -> None:
                     out_dir=det_dir / ic_name if rep % logging_freq == 0 else None
                 )
                 rep_results.extend(investigated_case_results)
-            except BaseException as e:
+            except MDSError as e:
+                print(f"\n\tBudget too big for case: {ic_name}")
+                continue
+            except BaseException:
                 print(f"\nExperiment failed for case: {ic_name}")
                 raise e
         

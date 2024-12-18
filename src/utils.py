@@ -1,7 +1,6 @@
 import datetime
 import random
 import warnings
-
 from math import log10
 
 import git

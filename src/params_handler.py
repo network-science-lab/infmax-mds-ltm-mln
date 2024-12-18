@@ -3,7 +3,7 @@
 import itertools
 import json
 import math
-
+import tempfile
 from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
@@ -12,7 +12,7 @@ from typing import Callable
 import network_diffusion as nd
 
 from src.loaders.net_loader import load_network
-from src.new_selectors import DCBSelector
+from src.models.seed_selectors import DCBSelector, DriverActorLimitedSelector
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -65,6 +65,16 @@ def get_logging_frequency(full_output_frequency: int) -> float | int:
     return full_output_frequency
 
 
+def create_out_dir(out_dir: str) -> Path:
+    try:
+        out_dir = Path(out_dir)
+        out_dir.mkdir(exist_ok=True, parents=True)
+    except FileExistsError:
+        print("Redirecting output to hell...")
+        out_dir = Path(tempfile.mkdtemp())
+    return out_dir
+
+
 def get_for_greedy(get_ss_func: Callable) -> Callable:
     """Decorate seed selection loader so that it can determine a base ranking for greedy."""
     @wraps(get_ss_func)
@@ -81,7 +91,7 @@ def get_with_mds(get_ss_func: Callable) -> Callable:
     def wrapper(selector_name: str) -> nd.seeding.BaseSeedSelector:
         if selector_name[:2] == "d^":
             ss_method = get_ss_func(selector_name[2:])
-            return nd.seeding.DriverActorSelector(method=ss_method)
+            return DriverActorLimitedSelector(method=ss_method, return_only_mds=True)
         return get_ss_func(selector_name)
     return wrapper
 

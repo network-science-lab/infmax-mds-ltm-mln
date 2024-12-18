@@ -5,7 +5,7 @@ from pathlib import Path
 import network_diffusion as nd
 
 from src.result_handler import SimulationPartialResult, extract_simulation_result
-
+from src.models.mltm import MDSLimitedMLTModel
 
 def experiment_step(
     protocol: str,
@@ -19,7 +19,7 @@ def experiment_step(
 ) -> SimulationPartialResult:
 
     # initialise spreading model
-    mltm = nd.models.MLTModel(
+    mltm = MDSLimitedMLTModel(
         protocol=protocol,
         seed_selector=nd.seeding.MockingActorSelector(ranking),
         seeding_budget = budget,

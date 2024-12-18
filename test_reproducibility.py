@@ -16,7 +16,7 @@ def tcase_ranking_config():
             "protocols": ["OR", "AND"],
             "mi_values": [0.9, 0.65, 0.1],
             "seed_budgets": [1, 10, 30],
-            "ss_methods": ["deg_c", "random"],
+            "ss_methods": ["deg_c", "random", "d^deg_c"],
         },
         "networks": ["toy_network"],
         "ranking_path": None,
