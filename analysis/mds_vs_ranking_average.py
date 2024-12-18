@@ -2,22 +2,33 @@ import pandas as pd
 import glob
 import os
 import argparse
+from pathlib import Path
 
 def main():
+
     parser = argparse.ArgumentParser(description='Process MDS and normal data for specified strategy.')
     parser.add_argument('--strategy', choices=['or', 'and'], required=True, help='Strategy to use: "or" or "and".')
+    parser.add_argument('--base_dir', type=str, default=None, help='Base directory for raw results.')
     args = parser.parse_args()
 
     strategy = args.strategy
 
-    # Define the base directories
-    base_dir = r'C:\Users\Mingshan\PycharmProjects\infmax-mds-ltm-mln\raw_results_2\data\raw_results'
+    # Determine the base directory
+    if args.base_dir:
+        base_dir = Path(args.base_dir)
+    else:
+        # Set default base_dir relative to the script's location
+        script_dir = Path(__file__).parent.parent
+        base_dir = script_dir / 'raw_results_2' / 'data' / 'raw_results'
+
+    if not base_dir.exists():
+        raise FileNotFoundError(f"The base directory {base_dir} does not exist.")
 
     # Paths for MDS-based results
-    base_mds_path = os.path.join(base_dir, 'mds_based', strategy, 'small_real')
+    base_mds_path = base_dir / 'mds_based' / strategy / 'small_real'
 
     # Paths for normal (rank-based) results
-    normal_results_file = os.path.join(base_dir, 'rank_based', strategy, 'results--ver-43_1.csv')
+    normal_results_file = base_dir / 'rank_based' / strategy / 'results--ver-43_1.csv'
 
     # The numerical columns
     numerical_columns = ['gain', 'simulation_length', 'seed_nb', 'exposed_nb', 'unexposed_nb']
@@ -25,37 +36,8 @@ def main():
     # Columns to keep as they are
     keep_columns = ['network', 'protocol', 'seed_budget', 'mi_value', 'ss_method']
 
-    # Initialize an empty list to store DataFrames
-    df_list = []
-
-    # Build the file pattern and get matched files
-    pattern = os.path.join(base_mds_path, 'results--ver-43_*.csv')
-    matched_files = glob.glob(pattern)
-    print(f"Matched files: {matched_files}")
-
-    # Read and collect the DataFrames
-    for filename in matched_files:
-        df = pd.read_csv(filename, sep=',')  # Adjust 'sep' if necessary
-        df_list.append(df)
-
-    # Concatenate all DataFrames
-    all_data = pd.concat(df_list, ignore_index=True)
-
-    # Drop the 'seed_ids' column if it exists
-    if 'seed_ids' in all_data.columns:
-        all_data = all_data.drop(columns=['seed_ids'])
-
-    # Group and aggregate the data
-    result = all_data.groupby(keep_columns).agg({col: 'mean' for col in numerical_columns}).reset_index()
-
-    # Save the result to a new CSV file
-    output_path = os.path.join(base_mds_path, 'averaged_results.csv')
-    result.to_csv(output_path, index=False)
-
-    print(f"Processing complete. The file has been saved at: {output_path}")
-
-    # Now, read data from files
-    mds_results_file = output_path
+    # averaged mds result file path
+    mds_results_file = os.path.join(base_mds_path, f'averaged_mds_results_{strategy}.csv')
 
     # Read data from files
     mds_df = pd.read_csv(mds_results_file, sep=',')
@@ -132,7 +114,7 @@ def main():
         print()
 
     # Save the results to a file
-    results_output_file = os.path.join(base_dir, f'results_{strategy}.txt')
+    results_output_file = os.path.join(base_dir, f'overall_comparison_results_{strategy}.txt')
     with open(results_output_file, 'w') as f:
         for network in networks:
             f.write(f"Network: {network}\n")

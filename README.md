@@ -33,7 +33,8 @@ To extract raw results and pack it into separate `zip` file run: `sh data/zip_ra
 ## Structure of the repository
 ```
 .
-├── data                    -> networks to compute actors' marginal efficiency for + results
+├── _data_set               -> networks to compute actors' marginal efficiency for + python wrapper
+├── _test_data              -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
 ├── src                     -> scripts to execute experiments according to provided configs
 ├── example_config.yaml     -> an example of the config accepted by the simulator
