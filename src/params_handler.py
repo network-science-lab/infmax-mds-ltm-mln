@@ -12,6 +12,7 @@ from typing import Callable
 import network_diffusion as nd
 
 from src.loaders.net_loader import load_network
+from src.models.mds import greedy_search, local_improvement
 from src.models.seed_selectors import DCBSelector, DriverActorLimitedSelector
 
 
@@ -89,11 +90,23 @@ def get_with_mds(get_ss_func: Callable) -> Callable:
     """Decorate seed selection loader so that it can optionally use MDS."""
     @wraps(get_ss_func)
     def wrapper(selector_name: str) -> nd.seeding.BaseSeedSelector:
-        if selector_name[:2] == "d^":
-            ss_method = get_ss_func(selector_name[2:])
-            return DriverActorLimitedSelector(method=ss_method, return_only_mds=True)
+        if selector_name[:2] in {"d^", "D^"}:
+            greedy_type, sorting_type = selector_name.split("^")
+            return DriverActorLimitedSelector(
+                mds_method=get_mds_routine(greedy_type),
+                sorting_method=get_ss_func(sorting_type),
+                return_only_mds=True
+            )
         return get_ss_func(selector_name)
     return wrapper
+
+
+def get_mds_routine(mds_type: str) -> Callable:
+    if mds_type == "d":
+        return greedy_search.get_mds_greedy
+    elif mds_type == "D":
+        return local_improvement.get_mds_locimpr
+    raise AttributeError(f"{mds_type} is not a valid name for MDS routine!")    
 
 
 @get_for_greedy
@@ -135,7 +148,7 @@ def get_seed_selector(selector_name: str) -> nd.seeding.BaseSeedSelector:
         return nd.seeding.VoteRankSeedSelector()
     elif selector_name == "v_rnk_m":
         return nd.seeding.VoteRankMLNSeedSelector()
-    raise AttributeError(f"{selector_name} is not a valid seed selector name!")
+    raise AttributeError(f"{selector_name} is not a valid name for seed selector!")
 
 
 def load_networks(networks: list[str]) -> list[Network]:

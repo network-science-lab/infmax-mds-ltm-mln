@@ -5,12 +5,6 @@ from typing import Any, List, Set
 
 import network_diffusion as nd
 
-
-from pathlib import Path
-import sys
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-
-
 from src.models.mds.greedy_search import minimum_dominating_set_with_initial
 
 
@@ -176,6 +170,7 @@ def remove_redundant_vertices(net, dominating_set):
 
 
 if __name__ == "__main__":
+    # to run this example update PYTHONPATH
     from utils import is_dominating_set
     l2c_1  = nd.tpn.get_l2_course_net(node_features=False, edge_features=False, directed=False)[0]
     # mds = nd.mln.driver_actors.compute_driver_actors(l2c_1)
