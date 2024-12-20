@@ -1,18 +1,25 @@
-"""Script with functions for driver actor selections and local improvement."""
+"""Script with functions for driver actor selections with local improvement."""
 
-from copy import deepcopy
-from typing import Any, List, Set
 import random
+from typing import Any, List, Set
+
 import network_diffusion as nd
-from . import mds
 
 
-def compute_driver_actors(net: nd.MultilayerNetwork) -> List[nd.MLNetworkActor]:
+from pathlib import Path
+import sys
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+
+
+from src.models.mds.greedy_search import minimum_dominating_set_with_initial
+
+
+def get_mds_locimpr(net: nd.MultilayerNetwork) -> List[nd.MLNetworkActor]:
     """Return driver actors for a given network using MDS and local improvement."""
     # Step 1: Compute initial Minimum Dominating Set
     initial_dominating_set: Set[Any] = set()
     for layer in net.layers:
-        initial_dominating_set = mds.minimum_dominating_set_with_initial(
+        initial_dominating_set = minimum_dominating_set_with_initial(
             net, layer, initial_dominating_set
         )
 
@@ -165,3 +172,17 @@ def remove_redundant_vertices(net, dominating_set):
                 # Break to re-check from scratch after every removal, ensuring first improvement strategy
                 break
     return improved_set
+
+
+
+if __name__ == "__main__":
+    from utils import is_dominating_set
+    l2c_1  = nd.tpn.get_l2_course_net(node_features=False, edge_features=False, directed=False)[0]
+    # mds = nd.mln.driver_actors.compute_driver_actors(l2c_1)
+    mds = get_mds_locimpr(l2c_1)
+    # mds = set(l2c_1.get_actors())
+    # mds.pop()
+    if is_dominating_set(candidate_ds=mds, network=l2c_1):
+        print(f"Given set: {set(ac.actor_id for ac in mds)} dominates the network!")
+    else:
+        print(f"Given set: {set(ac.actor_id for ac in mds)} does not dominate the network!")
