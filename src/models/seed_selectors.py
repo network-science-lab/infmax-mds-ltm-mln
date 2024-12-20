@@ -1,16 +1,16 @@
 """Functions with sed selectio methods not-yet implemented in network_diffusion."""
 
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 import networkx as nx
 import network_diffusion as nd
-
 from bidict import bidict
 from network_diffusion.utils import BOLD_UNDERLINE, THIN_UNDERLINE
 
 from src.models.mds.utils import is_dominating_set
 from src.models.mds.greedy_search import get_mds_greedy
+from src.models.mds.local_improvement import get_mds_locimpr
 
 
 class DCBSelector(nd.seeding.BaseSeedSelector):
@@ -45,7 +45,12 @@ class DCBSelector(nd.seeding.BaseSeedSelector):
 class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
     """Driver Actor based seed selector."""
 
-    def __init__(self, method: nd.seeding.BaseSeedSelector | None, return_only_mds: bool = True) -> None:
+    def __init__(
+        self,
+        mds_method: Callable,
+        sorting_method: nd.seeding.BaseSeedSelector | None = None,
+        return_only_mds: bool = True
+    ) -> None:
         """
         Initialise object.
 
@@ -55,15 +60,18 @@ class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
             the lenght equals a total number of actors.
         """
         super().__init__()
-        if isinstance(method, nd.seeding.DriverActorSelector):
+        if isinstance(sorting_method, nd.seeding.DriverActorSelector):
             raise AttributeError(f"Argument 'method' cannot be {self.__class__.__name__}!")
-        if not method:
-            method = nd.seeding.RandomSeedSelector()
-        self.selector = method
+        if not sorting_method:
+            sorting_method = nd.seeding.RandomSeedSelector()
+        if mds_method not in (_ := {get_mds_greedy, get_mds_locimpr}):
+            raise AttributeError(f"MDS method must be either {' or '.join(__.__name__ for __ in _)}")
+        self.mds_method = mds_method
+        self.sorting_method = sorting_method
         self.return_only_mds = return_only_mds
 
     def __str__(self) -> str:
-        slc = self.selector
+        slc = self.sorting_method
         s_str = "driver actor" if slc is None else f"driver actor + {slc.__class__.__name__}"
         return f"{BOLD_UNDERLINE}\nseed selection method\n{THIN_UNDERLINE}\n{s_str}\n{BOLD_UNDERLINE}\n"
 
@@ -72,14 +80,13 @@ class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
 
     def actorwise(self, net: nd.mln.MultilayerNetwork) -> list[nd.mln.MLNetworkActor]:
         """Return a list of driver actors for a multilayer network."""
-        driver_actors = get_mds_greedy(net)
+        driver_actors = self.mds_method(net)
         if not is_dominating_set(candidate_ds=driver_actors, network=net):
             raise ValueError(
                 f"A seed set: {set(a.actor_id for a in driver_actors)} does not dominate "
                 f"a following network:\n {net}!"
             )
-
-        all_actors_sorted = self.selector.actorwise(net)
+        all_actors_sorted = self.sorting_method.actorwise(net)
         return self._reorder_seeds(driver_actors, all_actors_sorted)
 
     def _reorder_seeds(
@@ -99,10 +106,15 @@ class DriverActorLimitedSelector(nd.seeding.BaseSeedSelector):
 
 
 if __name__ == "__main__":
+    # to run this example update PYTHONPATH
     net = nd.mln.functions.get_toy_network_piotr()
     print(net)
     # print(DCBSelector.get_mean_DCB(net))
     # print(DCBSelector()(net, actorwise=True))
-    mds_selector = DriverActorLimitedSelector(method=nd.seeding.DegreeCentralitySelector())
+    mds_selector = DriverActorLimitedSelector(
+        sorting_method=nd.seeding.DegreeCentralitySelector(),
+        mds_method=get_mds_greedy,
+        return_only_mds=True,
+    )
     print(mds_selector)
     print(mds_selector(net, actorwise=True))
