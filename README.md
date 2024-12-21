@@ -33,13 +33,18 @@ To extract raw results and pack it into separate `zip` file run: `sh data/zip_ra
 ## Structure of the repository
 ```
 .
-├── _data_set               -> networks to compute actors' marginal efficiency for + python wrapper
-├── _test_data              -> examplary results of the simulator used in the E2E test
-├── env                     -> a definition of the runtime environment
-├── src                     -> scripts to execute experiments according to provided configs
-├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── README.md
-├── run_experiments.py      -> main entrypoint to trigger the pipeline
+├── analysis                -> code to be merged into `src`
+├── data
+│   ├── experiment_setup    -> template configuration files with actulally used experimental setup
+│   ├── networks            -> networks used in exmeriments
+│   ├── processed_results
+│   ├── raw_results
+│   └── test                -> examplary results of the simulator used in the E2E test
+├── env                     -> a definition of the runtime environment
+├── example_config.yaml     -> an example of the config accepted by the simulator
+├── run_experiments.py      -> an entrypoint to trigger the pipeline to evaluate MDS in InfMax
+├── src                     -> scripts to execute experiments and process the retults
 ├── test_reproducibility.py -> E2E test to prove that results can be repeated
 └── visualise.ipynb         -> a notebook to produce results analysis
 ```
