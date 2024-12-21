@@ -54,6 +54,17 @@ class Results:
         }
 
     @staticmethod
+    def get_seeds_with_frequency(slice_df: pd.DataFrame) -> tuple[list[str], list[float]]:
+        seed_sets = slice_df["seed_ids"].map(lambda x: x.split(";")).to_list()
+        seed_sets = np.array(seed_sets).flatten()
+        seeds_counted = Counter(seed_sets)
+        seed_ids = [str(key) for key in list(seeds_counted.keys())]
+        seed_frequency = np.array(list(seeds_counted.values())) / sum(seeds_counted.values())
+        # return seed_ids, np.log10(seed_frequency * 100).clip(0, 1)
+        return seed_ids, (seed_frequency * 5).clip(0, 1)
+        # return seed_ids, seed_frequency
+
+    @staticmethod
     def get_actors_nb(slice_df: np.ndarray) -> np.ndarray:
         return (slice_df.iloc[0]["exposed_nb"] + slice_df.iloc[0]["unexposed_nb"]).astype(int).item()
 
@@ -74,6 +85,20 @@ class Results:
             (self.raw_df["ss_method"] == ss_method)
         ]["seed_ids"].to_list()
         return [set(seed_set.split(";")) for seed_set in seed_sets]
+
+    @staticmethod
+    def prepare_centrality(net: nd.MultilayerNetwork, centrality: str) -> tuple[dict[str, int], dict[int, int]]:
+        if centrality == "degree":
+            func = nd.mln.functions.degree
+            denom = sum(net.get_nodes_num().values())
+        elif centrality == "neighbourhood_size":
+            func = nd.mln.functions.neighbourhood_size
+            denom = net.get_actors_num()
+        else:
+            raise AttributeError("Unsupported centrality function!")
+        centrality_dict = {str(actor.actor_id): value for actor, value in func(net).items()}
+        histogram_cardinal = dict(Counter(list(centrality_dict.values())))
+        return centrality_dict, {key: value / denom for key, value in histogram_cardinal.items()}
 
 
 class JSONParser:
@@ -161,6 +186,13 @@ class Plotter:
         "sf5",
         "timik1q2009",
     ]
+    _centralities = {
+        "deg_c": "degree",
+        "deg_cd": "degree",
+        "nghb_1s": "neighbourhood_size",
+        "nghb_sd": "neighbourhood_size",
+        "random": "degree",
+    }
 
     def yield_page(self) -> Generator[tuple[str, str, str], None, None]:
         for and_case in product(
@@ -201,7 +233,7 @@ class Plotter:
         ax.fill_between(x, y_avg - y_std, y_avg + y_std, color=colour, alpha=0.4)
     
 
-    def plot_single_comparison(
+    def plot_single_comparison_dynamics(
         self,
         record_mds: list[dict[str, float]],
         record_nml: list[dict[str, float]],
@@ -228,3 +260,28 @@ class Plotter:
     @staticmethod
     def plot_dummy_fig(mi_value: float, seed_budget: int, ax: matplotlib.axes.Axes) -> None:
         ax.set_title(f"No results for mu={mi_value}, |S|={seed_budget}")
+
+    @staticmethod
+    def plot_single_comparison_centralities(
+        record_mds: list[dict[str, float]],
+        record_nml: list[dict[str, float]],
+        all_centralities: dict[str, int],
+        hist_centralities: dict[int, int],
+        mi_value: float,
+        seed_budget: int,
+        ax: matplotlib.axes.Axes,
+    ) -> None:
+        sf_mds = Results.get_seeds_with_frequency(record_mds)
+        sf_nml = Results.get_seeds_with_frequency(record_nml)
+        plt.rc("legend", fontsize=8)
+        ymax = max(hist_centralities.values()) + 1
+        degrees_mds = [all_centralities[seed] for seed in sf_mds[0]]
+        degrees_nml = [all_centralities[seed] for seed in sf_nml[0]]
+        ax.scatter(hist_centralities.keys(), hist_centralities.values(), marker=".")
+        ax.vlines(x=degrees_mds, ymin=0, ymax=ymax, label="MDS", colors="greenyellow", alpha=sf_mds[1])
+        ax.vlines(x=degrees_nml, ymin=0, ymax=ymax, label="NML", colors="sandybrown", alpha=sf_nml[1])
+        ax.set_xlim(left=0, auto=True)
+        ax.set_ylim(bottom=0, top=max(hist_centralities.values()) * 1.2, auto=True)
+        ax.yaxis.set_visible(False)
+        ax.legend(loc="upper right")
+        ax.set_title(f"mu={mi_value}, |S|={seed_budget}")
