@@ -274,14 +274,14 @@ class Plotter:
         sf_mds = Results.get_seeds_with_frequency(record_mds)
         sf_nml = Results.get_seeds_with_frequency(record_nml)
         plt.rc("legend", fontsize=8)
-        ymax = max(hist_centralities.values()) + 1
+        ymax = max(hist_centralities.values()) * 1.2
         degrees_mds = [all_centralities[seed] for seed in sf_mds[0]]
         degrees_nml = [all_centralities[seed] for seed in sf_nml[0]]
         ax.scatter(hist_centralities.keys(), hist_centralities.values(), marker=".")
-        ax.vlines(x=degrees_mds, ymin=0, ymax=ymax, label="MDS", colors="greenyellow", alpha=sf_mds[1])
-        ax.vlines(x=degrees_nml, ymin=0, ymax=ymax, label="NML", colors="sandybrown", alpha=sf_nml[1])
+        ax.vlines(x=degrees_mds, ymin=0, ymax=ymax/2, label="MDS", colors="greenyellow", alpha=sf_mds[1])
+        ax.vlines(x=degrees_nml, ymin=ymax/2, ymax=ymax, label="NML", colors="sandybrown", alpha=sf_nml[1])
         ax.set_xlim(left=0, auto=True)
-        ax.set_ylim(bottom=0, top=max(hist_centralities.values()) * 1.2, auto=True)
+        ax.set_ylim(bottom=0, top=ymax, auto=True)
         ax.yaxis.set_visible(False)
         ax.legend(loc="upper right")
         ax.set_title(f"mu={mi_value}, |S|={seed_budget}")
