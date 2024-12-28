@@ -123,19 +123,40 @@ class MultilayerPAGenerator(MultilayerBaseGenerator):
     
 
 def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: str) -> None:
-    """Draw briefly a given multilayer network."""
+    """Draw a multilayer network with MDS."""
     if net.get_actors_num() > 100:
         warnings.warn(
-            f"Too large network ({net.get_actors_num()}). \
-                Visualisation can be crippled.",
+            f"Too large network ({net.get_actors_num()}). Visualisation can be crippled.",
             stacklevel=1,
         )
-    pos = nx.drawing.spring_layout([a.actor_id for a in net.get_actors()])
-    fig, axs = plt.subplots(nrows=1, ncols=len(net.layers))
+    pos = nx.drawing.spiral_layout([a.actor_id for a in net.get_actors()])
+    _, axs = plt.subplots(nrows=1, ncols=len(net.layers))
+
     for idx, (layer_name, layer_graph) in enumerate(net.layers.items()):
+        degrees = dict(nx.degree(layer_graph))
+        mds_ids = [actor.actor_id for actor in mds if actor.actor_id in layer_graph.nodes]
+        other_ids = [node for node in layer_graph.nodes if node not in mds_ids]
+    
         axs[idx].set_title(layer_name)
-        node_size= np.array([v for v in dict(nx.degree(layer_graph)).values()]) * 10
         nx.draw_networkx_edges(layer_graph, ax=axs[idx], pos=pos, alpha=0.3, width=1, edge_color="m")
-        nx.draw_networkx_nodes(layer_graph, ax=axs[idx], pos=pos, node_size=node_size, node_color="#210070", alpha=0.5)
+        nx.draw_networkx_nodes(
+            layer_graph,
+            nodelist=mds_ids,
+            ax=axs[idx],
+            pos={node_id: node_pos for node_id, node_pos in pos.items() if node_id in mds_ids},
+            node_size=[node_deg * 20 for node_id, node_deg in degrees.items() if node_id in mds_ids],
+            node_color="#210070",
+            alpha=0.5,
+        )
+        nx.draw_networkx_nodes(
+            layer_graph,
+            nodelist=other_ids,
+            ax=axs[idx],
+            pos={node_id: node_pos for node_id, node_pos in pos.items() if node_id in other_ids},
+            node_size=[node_deg * 20 for node_id, node_deg in degrees.items() if node_id in other_ids],
+            node_color="yellow",
+            alpha=0.5,
+        )
         nx.drawing.draw_networkx_labels(layer_graph, ax=axs[idx], pos=pos, font_size=8)
-    plt.savefig(f"{out_path}.png", dpi=300)
+
+    plt.savefig(out_path, dpi=300)
