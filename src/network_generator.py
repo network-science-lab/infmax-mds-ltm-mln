@@ -122,6 +122,25 @@ class MultilayerPAGenerator(MultilayerBaseGenerator):
         return [ml.evolution_pa(m0=m0, m=ms) for m0, ms in zip(m0s, ms)]
     
 
+# TODO: use nd based function once it gets updated!
+def squeeze_by_neighbourhood(
+    net: nd.MultilayerNetwork, preserve_mlnetworkactor_objects: bool = True
+) -> nx.Graph:
+    """Squeeze multilayer network to a single layer `nx.Graph`."""
+    squeezed_net = nx.Graph()
+    for actor in net.get_actors():
+        for neighbour in nd.mln.functions.all_neighbors(net, actor):
+            edge = (
+                (actor, neighbour)
+                if preserve_mlnetworkactor_objects
+                else (actor.actor_id, neighbour.actor_id)
+            )
+            squeezed_net.add_edge(*edge)
+        squeezed_net.add_node(actor if preserve_mlnetworkactor_objects else actor.actor_id)
+    assert net.get_actors_num() == len(squeezed_net)
+    return squeezed_net
+    
+
 def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: str) -> None:
     """Draw a multilayer network with MDS."""
     if net.get_actors_num() > 100:
@@ -129,7 +148,7 @@ def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: s
             f"Too large network ({net.get_actors_num()}). Visualisation can be crippled.",
             stacklevel=1,
         )
-    pos = nx.drawing.spiral_layout([a.actor_id for a in net.get_actors()])
+    pos = nx.drawing.kamada_kawai_layout(squeeze_by_neighbourhood(net, False))
     _, axs = plt.subplots(nrows=1, ncols=len(net.layers))
 
     for idx, (layer_name, layer_graph) in enumerate(net.layers.items()):
@@ -144,8 +163,8 @@ def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: s
             nodelist=mds_ids,
             ax=axs[idx],
             pos={node_id: node_pos for node_id, node_pos in pos.items() if node_id in mds_ids},
-            node_size=[node_deg * 20 for node_id, node_deg in degrees.items() if node_id in mds_ids],
-            node_color="#210070",
+            node_size=[node_deg ** 2.5 for node_id, node_deg in degrees.items() if node_id in mds_ids],
+            node_color="yellow",
             alpha=0.5,
         )
         nx.draw_networkx_nodes(
@@ -153,8 +172,8 @@ def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: s
             nodelist=other_ids,
             ax=axs[idx],
             pos={node_id: node_pos for node_id, node_pos in pos.items() if node_id in other_ids},
-            node_size=[node_deg * 20 for node_id, node_deg in degrees.items() if node_id in other_ids],
-            node_color="yellow",
+            node_size=[node_deg ** 2.5 for node_id, node_deg in degrees.items() if node_id in other_ids],
+            node_color="#210070",
             alpha=0.5,
         )
         nx.drawing.draw_networkx_labels(layer_graph, ax=axs[idx], pos=pos, font_size=8)
