@@ -1,15 +1,17 @@
 """Generators of multilayer networks with Preferential Attachment or Erdos-Renyi models."""
 
 import abc
-
-import numpy as np
-import uunet.multinet as ml
-
-from uunet._multinet import PyMLNetwork, PyEvolutionModel
 import warnings
+from typing import Any
+
+import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 import network_diffusion as nd
+import numpy as np
+import pandas as pd
+import uunet.multinet as ml
+from uunet._multinet import PyMLNetwork, PyEvolutionModel
 
 
 class MultilayerBaseGenerator(abc.ABC):
@@ -141,6 +143,31 @@ def squeeze_by_neighbourhood(
     return squeezed_net
     
 
+def _draw_node(
+    graph: nx.Graph,
+    node_id: Any,
+    nodes_pos: dict[Any, tuple[float, float]],
+    nodes_degrees: pd.DataFrame,
+    degree_thresh: int,
+    mds: set[Any],
+    ax: matplotlib.axes.Axes,
+):
+    nx.draw_networkx_nodes(
+        graph,
+        nodelist=[node_id],
+        ax=ax,
+        pos={node_id: nodes_pos[node_id]},
+        node_size=150,
+        node_color="#210070" if nodes_degrees.loc[node_id]["degree"] >= degree_thresh else "magenta",
+        node_shape="*" if node_id in mds else "o",
+        alpha=0.5,
+    )
+
+
+def _get_degree_threshold(degrees_df: pd.DataFrame, top_k: int) -> int:
+    return degrees_df.iloc[top_k - 1]["degree"]
+
+
 def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: str) -> None:
     """Draw a multilayer network with MDS."""
     if net.get_actors_num() > 100:
@@ -148,34 +175,33 @@ def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: s
             f"Too large network ({net.get_actors_num()}). Visualisation can be crippled.",
             stacklevel=1,
         )
+    degrees_dict = {actor.actor_id: degree for actor, degree in nd.mln.functions.degree(net).items()}
+    degrees_df = pd.DataFrame({"degree": degrees_dict}).sort_values("degree", ascending=False)
+    degree_thresh = _get_degree_threshold(degrees_df, len(mds))
+    mds_ids = {actor.actor_id for actor in mds}
     pos = nx.drawing.kamada_kawai_layout(squeeze_by_neighbourhood(net, False))
-    _, axs = plt.subplots(nrows=1, ncols=len(net.layers))
-
+    fig, axs = plt.subplots(nrows=1, ncols=len(net.layers))
     for idx, (layer_name, layer_graph) in enumerate(net.layers.items()):
-        degrees = dict(nx.degree(layer_graph))
-        mds_ids = [actor.actor_id for actor in mds if actor.actor_id in layer_graph.nodes]
-        other_ids = [node for node in layer_graph.nodes if node not in mds_ids]
-    
         axs[idx].set_title(layer_name)
-        nx.draw_networkx_edges(layer_graph, ax=axs[idx], pos=pos, alpha=0.3, width=1, edge_color="m")
-        nx.draw_networkx_nodes(
+        nx.draw_networkx_edges(
             layer_graph,
-            nodelist=mds_ids,
             ax=axs[idx],
-            pos={node_id: node_pos for node_id, node_pos in pos.items() if node_id in mds_ids},
-            node_size=[node_deg ** 2.5 for node_id, node_deg in degrees.items() if node_id in mds_ids],
-            node_color="yellow",
-            alpha=0.5,
+            pos=pos,
+            alpha=0.25,
+            width=1,
+            edge_color="magenta",
         )
-        nx.draw_networkx_nodes(
-            layer_graph,
-            nodelist=other_ids,
-            ax=axs[idx],
-            pos={node_id: node_pos for node_id, node_pos in pos.items() if node_id in other_ids},
-            node_size=[node_deg ** 2.5 for node_id, node_deg in degrees.items() if node_id in other_ids],
-            node_color="#210070",
-            alpha=0.5,
-        )
-        nx.drawing.draw_networkx_labels(layer_graph, ax=axs[idx], pos=pos, font_size=8)
-
+        for node in layer_graph.nodes:
+            _draw_node(
+                graph=layer_graph,
+                node_id=node,
+                nodes_pos=pos,
+                nodes_degrees=degrees_df,
+                mds=mds_ids,
+                degree_thresh=degree_thresh,
+                ax=axs[idx],
+            )
+        nx.drawing.draw_networkx_labels(layer_graph, ax=axs[idx], pos=pos, font_size=5, alpha=1)
+    fig.set_size_inches(15, 5)
+    fig.tight_layout()
     plt.savefig(out_path, dpi=300)

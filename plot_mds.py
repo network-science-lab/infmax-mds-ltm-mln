@@ -10,6 +10,8 @@ import uunet.multinet as ml
 
 from src.network_generator import MultilayerERGenerator, MultilayerPAGenerator, draw_mds
 from src.models.mds import greedy_search, local_improvement
+from src.loaders.net_loader import load_network
+from src.visualisation import Plotter
 
 
 def generate(model: Literal["PA", "ER"], nb_actors: int, nb_layers: int) -> None:
@@ -39,6 +41,9 @@ def generate(model: Literal["PA", "ER"], nb_actors: int, nb_layers: int) -> None
 
     net_nd = nd.MultilayerNetwork(layers=net_nx)
     net_nd = nd.mln.functions.remove_selfloop_edges(net_nd)
+    actors_to_remove = [ac.actor_id for ac, nghb in nd.mln.functions.neighbourhood_size(net_nd).items() if nghb == 0]
+    for l_graph in net_nd.layers.values():
+        l_graph.remove_nodes_from(actors_to_remove)
     print(net_nd)
     return net_nd
 
@@ -58,10 +63,25 @@ if __name__ == "__main__":
     out_dir = Path("./doodles")
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    net = generate("ER", 40, 3)
+    # for idx in range(10):
+    #     net = generate("ER", 50, 3)
+    #     mds = local_improvement.get_mds_locimpr(net)
+    #     plot(net, mds, f"ER_{idx}", out_dir)
+
+    #     net = generate("PA", 100, 3)
+    #     mds = local_improvement.get_mds_locimpr(net)
+    #     plot(net, mds, f"PA_{idx}", out_dir)
+
+    # for net_name in ["aucs", "l2_course_net_1"]: # Plotter._networks:
+    #     net = load_network(net_name, as_tensor=False)
+    #     mds = local_improvement.get_mds_locimpr(net)
+    #     plot(net, mds, net_name, out_dir)
+    
+
+    net = generate("ER", 50, 3)
     mds = local_improvement.get_mds_locimpr(net)
     plot(net, mds, "ER", out_dir)
 
-    net = generate("PA", 40, 3)
+    net = generate("PA", 100, 3)
     mds = local_improvement.get_mds_locimpr(net)
     plot(net, mds, "PA", out_dir)
