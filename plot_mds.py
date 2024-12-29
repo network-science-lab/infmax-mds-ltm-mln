@@ -19,7 +19,7 @@ def generate(model: Literal["PA", "ER"], nb_actors: int, nb_layers: int) -> None
         net_uu = MultilayerERGenerator(
             nb_layers=nb_layers,
             nb_actors=nb_actors,
-            nb_steps=nb_actors * 5,
+            nb_steps=nb_actors * 10,
             std_nodes=std_nodes,
         )()
     elif model == "PA":
@@ -27,7 +27,7 @@ def generate(model: Literal["PA", "ER"], nb_actors: int, nb_layers: int) -> None
         net_uu = MultilayerPAGenerator(
             nb_layers=nb_layers,
             nb_actors=nb_actors,
-            nb_steps=nb_actors * 5,
+            nb_steps=nb_actors * 10,
             nb_hubs=nb_hubs,
         )()
     else:
@@ -58,10 +58,10 @@ if __name__ == "__main__":
     out_dir = Path("./doodles")
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    net = generate("ER", 50, 3)
+    net = generate("ER", 40, 3)
     mds = local_improvement.get_mds_locimpr(net)
     plot(net, mds, "ER", out_dir)
 
-    net = generate("PA", 50, 3)
+    net = generate("PA", 40, 3)
     mds = local_improvement.get_mds_locimpr(net)
     plot(net, mds, "PA", out_dir)
