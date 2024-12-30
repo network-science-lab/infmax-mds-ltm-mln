@@ -42,10 +42,11 @@ To extract raw results and pack it into separate `zip` file run: `sh data/zip_ra
 │   ├── raw_results
 │   └── test                -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
+├── src                     -> scripts to execute experiments and process the results
 ├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── run_experiments.py      -> an entrypoint to trigger the pipeline to evaluate MDS in InfMax
-├── src                     -> scripts to execute experiments and process the results
 ├── test_reproducibility.py -> E2E test to prove that results can be repeated
+├── produce_comparison.py   -> produce CSV with comparison between (non)MDS w.r.t. dynamics and gain
 ├── visualise_mds.py        -> produce structural and cantrality-based visualisations of MDS
 └── visualise_results.ipynb -> a notebook to produce results analysis
 ```
@@ -85,6 +86,7 @@ Results are supposed to be fully reproducable. There is a test for that: `test_r
 
 ## Obtaining analysis of results
 
-To process raw results please simply execute the notebook. Note, that it can take while to get all
-outcomes. Threfore, in order to obtain complete visualisations we recommend to execute the notebook
-in non-interactive mode: `jupyter nbconvert visualise.ipynb --to python --execute`
+To process raw results please execute the notebook or one of the python scripts in the root of the
+repository listed above. Note, that it can take while for jupyter to get all outcomes. Threfore,
+in order to obtain complete visualisations we recommend to execute the notebook in non-interactive
+mode: `jupyter nbconvert visualise_results.ipynb --to python --execute`
