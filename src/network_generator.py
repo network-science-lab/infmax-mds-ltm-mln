@@ -13,6 +13,14 @@ import pandas as pd
 import uunet.multinet as ml
 from uunet._multinet import PyMLNetwork, PyEvolutionModel
 
+from src.visualisation import Results
+
+
+ACTORS_COLOUR = "magenta"
+MDS_ACTORS_COLOUR = "#210070"
+ACTORS_SHAPE = "o"
+CENTRAL_ACTORS_SHAPE = "*"
+
 
 class MultilayerBaseGenerator(abc.ABC):
     """Abstract base class for multilayer network generators."""
@@ -124,7 +132,7 @@ class MultilayerPAGenerator(MultilayerBaseGenerator):
         return [ml.evolution_pa(m0=m0, m=ms) for m0, ms in zip(m0s, ms)]
     
 
-# TODO: use nd based function once it gets updated!
+# TODO: use nd based function once it gets updated to the current form!
 def squeeze_by_neighbourhood(
     net: nd.MultilayerNetwork, preserve_mlnetworkactor_objects: bool = True
 ) -> nx.Graph:
@@ -158,26 +166,20 @@ def _draw_node(
         ax=ax,
         pos={node_id: nodes_pos[node_id]},
         node_size=150,
-        node_color="#210070" if nodes_degrees.loc[node_id]["degree"] >= degree_thresh else "magenta",
-        node_shape="*" if node_id in mds else "o",
+        node_color=MDS_ACTORS_COLOUR if node_id in mds else ACTORS_COLOUR,
+        node_shape=CENTRAL_ACTORS_SHAPE if nodes_degrees.loc[node_id]["degree"] >= degree_thresh else ACTORS_SHAPE,
         alpha=0.5,
     )
 
 
-def _get_degree_threshold(degrees_df: pd.DataFrame, top_k: int) -> int:
-    return degrees_df.iloc[top_k - 1]["degree"]
+def _get_centrality_threshold(degrees_df: pd.DataFrame, top_k: int, centrality_name: str) -> int:
+    return degrees_df.iloc[top_k - 1][centrality_name]
 
 
-def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: str) -> None:
-    """Draw a multilayer network with MDS."""
-    if net.get_actors_num() > 100:
-        warnings.warn(
-            f"Too large network ({net.get_actors_num()}). Visualisation can be crippled.",
-            stacklevel=1,
-        )
+def plot_structure(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], name: str, out_path: str) -> None:
     degrees_dict = {actor.actor_id: degree for actor, degree in nd.mln.functions.degree(net).items()}
     degrees_df = pd.DataFrame({"degree": degrees_dict}).sort_values("degree", ascending=False)
-    degree_thresh = _get_degree_threshold(degrees_df, len(mds))
+    degree_thresh = _get_centrality_threshold(degrees_df, len(mds), "degree")
     mds_ids = {actor.actor_id for actor in mds}
     pos = nx.drawing.kamada_kawai_layout(squeeze_by_neighbourhood(net, False))
     fig, axs = plt.subplots(nrows=1, ncols=len(net.layers))
@@ -189,7 +191,7 @@ def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: s
             pos=pos,
             alpha=0.25,
             width=1,
-            edge_color="magenta",
+            edge_color=ACTORS_COLOUR,
         )
         for node in layer_graph.nodes:
             _draw_node(
@@ -204,4 +206,43 @@ def draw_mds(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], out_path: s
         nx.drawing.draw_networkx_labels(layer_graph, ax=axs[idx], pos=pos, font_size=5, alpha=1)
     fig.set_size_inches(15, 5)
     fig.tight_layout()
-    plt.savefig(out_path, dpi=300)
+    plt.savefig(out_path / f"{name}_structure.png", dpi=300)
+
+
+def _plot_centrality(
+    mds: set[Any],
+    centr_name: str,
+    centrality_vals: dict[str, int],
+    cantrality_hist: dict[int, int],
+    ax: matplotlib.axes.Axes,
+) -> None:
+    plt.rc("legend", fontsize=8)
+    ymax = max(cantrality_hist.values()) * 1.2
+    centr_mds = [centrality_vals[str(actor.actor_id)] for actor in mds]
+    centr_df = pd.DataFrame({"centr": centrality_vals}).sort_values("centr", ascending=False)
+    centr_thresh = _get_centrality_threshold(centr_df, len(mds), "centr")
+    ax.scatter(cantrality_hist.keys(), cantrality_hist.values(), marker="o", color=ACTORS_COLOUR)
+    ax.vlines(x=centr_mds, ymin=0, ymax=ymax, label="MDS", colors=MDS_ACTORS_COLOUR, alpha=1)
+    ax.vlines(x=centr_thresh, ymin=0, ymax=ymax, label="top-k threshold", colors="red", alpha=1)
+    ax.set_xlim(left=0, auto=True)
+    ax.set_ylim(bottom=0, top=ymax, auto=True)
+    ax.yaxis.set_visible(False)
+    ax.legend(loc="upper right")
+    ax.set_title(f"{centr_name}")
+
+
+def plot_centralities(net: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], name: str, out_path: str) -> None:
+    fig, axs = plt.subplots(nrows=1, ncols=2)
+    for idx, centr_name in enumerate(["degree", "neighbourhood_size"]):
+        centr_dict = Results.prepare_centrality(net, centr_name)
+        _plot_centrality(
+            mds=mds,
+            centr_name=centr_name,
+            centrality_vals=centr_dict[0],
+            cantrality_hist=centr_dict[1],
+            ax=axs[idx],
+        )
+    fig.set_size_inches(15, 5)
+    fig.tight_layout()
+    fig.suptitle(f"{name}")
+    plt.savefig(out_path / f"{name}_centralities.png", dpi=300)
