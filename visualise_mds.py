@@ -19,7 +19,8 @@ if __name__ == "__main__":
     out_dir.mkdir(exist_ok=True, parents=True)
 
     # visualise artificial networks
-    for idx in range(2):
+    for idx in range(10):
+        print(f"{idx}/{10}")
         # Erdos-Renyi model
         net = generate(model="ER", nb_actors=50, nb_layers=3)
         mds = mds_func(net)
@@ -35,6 +36,7 @@ if __name__ == "__main__":
 
     # visualise real networks
     for net_name in Plotter._networks:
+        print(net_name)
         net = load_network(net_name, as_tensor=False)
         mds = mds_func(net)
         mds_plotter = MDSPlotter(net, mds, net_name, out_dir)
