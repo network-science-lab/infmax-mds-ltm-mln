@@ -89,6 +89,8 @@ class MDSPlotter:
         mds_ids = {actor.actor_id for actor in self.mds}
         pos = nx.drawing.kamada_kawai_layout(squeeze_by_neighbourhood(self.net, False))
         fig, axs = plt.subplots(nrows=1, ncols=len(self.net.layers))
+        if len(self.net.layers) == 1:  # fix for single-layered networks
+            axs = [axs]
         for idx, (layer_name, layer_graph) in enumerate(self.net.layers.items()):
             axs[idx].set_title(layer_name)
             nx.draw_networkx_edges(
@@ -127,12 +129,31 @@ class MDSPlotter:
         centr_mds = [centrality_vals[str(actor.actor_id)] for actor in self.mds]
         centr_df = pd.DataFrame({"centr": centrality_vals}).sort_values("centr", ascending=False)
         centr_thresh = self._get_centrality_threshold(centr_df, len(self.mds), "centr")
-        ax.scatter(cantrality_hist.keys(), cantrality_hist.values(), marker="o", color=ACTORS_COLOUR)
-        ax.vlines(x=centr_mds, ymin=0, ymax=ymax, label="MDS", colors=MDS_ACTORS_COLOUR, alpha=1)
-        ax.vlines(x=centr_thresh, ymin=0, ymax=ymax, label="top-k threshold", colors="red", alpha=1)
+        ax.vlines(
+            x=centr_mds,
+            ymin=0,
+            ymax=ymax,
+            label="MDS",
+            colors=MDS_ACTORS_COLOUR,
+            alpha= 1 / len(self.mds),
+        )
+        ax.vlines(
+            x=centr_thresh,
+            ymin=0,
+            ymax=ymax, 
+            label="top-k threshold",
+            colors="red",
+            alpha=.75,
+        )
+        ax.scatter(
+            cantrality_hist.keys(),
+            cantrality_hist.values(),
+            marker="o",
+            color=ACTORS_COLOUR,
+            alpha=1,
+        )
         ax.set_xlim(left=0, auto=True)
         ax.set_ylim(bottom=0, top=ymax, auto=True)
-        ax.yaxis.set_visible(False)
         ax.legend(loc="upper right")
         ax.set_title(f"{centr_name}")
 
