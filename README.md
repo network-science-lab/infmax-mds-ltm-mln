@@ -44,7 +44,7 @@ To extract raw results and pack it into separate `zip` file run: `sh data/zip_ra
 ├── env                     -> a definition of the runtime environment
 ├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── run_experiments.py      -> an entrypoint to trigger the pipeline to evaluate MDS in InfMax
-├── src                     -> scripts to execute experiments and process the retults
+├── src                     -> scripts to execute experiments and process the results
 ├── test_reproducibility.py -> E2E test to prove that results can be repeated
 └── visualise.ipynb         -> a notebook to produce results analysis
 ```
