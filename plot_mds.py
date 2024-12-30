@@ -3,15 +3,12 @@
 from pathlib import Path
 from typing import Literal
 
-import matplotlib.pyplot as plt
-import networkx as nx
 import network_diffusion as nd
 import uunet.multinet as ml
 
-from src.network_generator import MultilayerERGenerator, MultilayerPAGenerator, plot_structure, plot_centralities
+from src.network_generator import MultilayerERGenerator, MultilayerPAGenerator, MDSPlotter
 from src.models.mds import greedy_search, local_improvement
 from src.loaders.net_loader import load_network
-from src.visualisation import Plotter, Results
 
 
 def generate(model: Literal["PA", "ER"], nb_actors: int, nb_layers: int) -> None:
@@ -48,17 +45,6 @@ def generate(model: Literal["PA", "ER"], nb_actors: int, nb_layers: int) -> None
     return net_nd
 
 
-
-def plot(net_nd: nd.MultilayerNetwork, mds: set[nd.MLNetworkActor], net_name: str, out_dir: Path):
-    fig, axs = plt.subplots(nrows=1, ncols=len(net_nd.layers))
-    for l_idx, (l_name, l_graph) in enumerate(net_nd.layers.items()):
-        axs[l_idx].hist(nx.degree_histogram(l_graph), bins=10)
-        axs[l_idx].set_title(l_name)
-    fig.suptitle("Degree distribution")
-    plt.savefig(out_dir / f"{net_name}_hist.png", dpi=300)
-    plot_structure(net_nd, mds, out_dir / f"{net_name}_plot.png")
-
-
 if __name__ == "__main__":
 
     out_dir = Path("./doodles")
@@ -76,12 +62,9 @@ if __name__ == "__main__":
     for net_name in ["aucs", "l2_course_net_1"]: # Plotter._networks:
         net = load_network(net_name, as_tensor=False)
         mds = local_improvement.get_mds_locimpr(net)
-        # plot(net, mds, net_name, out_dir)
-        plot_centralities(net, mds, net_name, out_dir)
-        plot_structure(net, mds, net_name, out_dir)
-        
-        # deg_centr = Results.prepare_centrality(net, "degree")
-        # nghb_centr = Results.prepare_centrality(net, "neighbourhood_size")
+        plotter = MDSPlotter(net, mds, net_name, out_dir)
+        plotter.plot_centralities()
+        plotter.plot_structure()
     
 
     # net = generate("ER", 50, 3)
