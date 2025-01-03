@@ -5,17 +5,17 @@ import multiprocessing.managers
 import multiprocessing.shared_memory
 import random
 import time
-from pathlib import Path
 from typing import Any
 
 import network_diffusion as nd
 
-# try:
-#     import sys
-#     import src
-# except:
-#     sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-#     print(sys.path)
+try:
+    import sys
+    from pathlib import Path
+    import src
+except:
+    sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+    print(sys.path)
 
 from src.models.mds.greedy_search import minimum_dominating_set_with_initial
 from src.models.mds.utils import ShareableListManager
@@ -32,7 +32,7 @@ def get_mds_locimpr(net: nd.MultilayerNetwork, timeout: int = None) -> list[nd.M
 
     # step 2: apply Local Improvement to enhance the Dominating Set
     if not timeout:
-        timeout=net.get_actors_num() * 90 // 1000,  # proportion is 1,5 minute per 1000 actors
+        timeout=net.get_actors_num() * 90 // 1000  # proportion is 1,5 minute per 1000 actors
     improved_dominating_set = LocalImprovement(net)(initial_dominating_set, timeout)
 
     return [net.get_actor(actor_id) for actor_id in improved_dominating_set]
@@ -203,24 +203,22 @@ class LocalImprovement:
 
 
 if __name__ == "__main__":
-    # to run this example update PYTHONPATH
     from utils import is_dominating_set
     from src.loaders.net_loader import load_network
     from src.models.mds.greedy_search import get_mds_greedy
 
-    net = load_network("sf2", as_tensor=False)
-    # net = load_network("ckm_physicians", as_tensor=False)
+    # net = load_network("sf2", as_tensor=False)
+    net = load_network("ckm_physicians", as_tensor=False)
 
     start_time = time.time()
     mds = get_mds_locimpr(net)
     # mds = get_mds_greedy(net)
-
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Execution time: {elapsed_time:.2f} seconds")
 
     # mds.pop()
     if is_dominating_set(candidate_ds=mds, network=net):
-        print(f"A {len(mds)}-length set: {set(ac.actor_id for ac in mds)} dominates the network!")
+        print(f"A {len(mds)}-length set: {set(ac.actor_id for ac in mds)} is dominating!")
     else:
-        print(f"A {len(mds)}-length set: {set(ac.actor_id for ac in mds)} does not dominate the network!")
+        print(f"A {len(mds)}-length set: {set(ac.actor_id for ac in mds)} is not dominating!")
