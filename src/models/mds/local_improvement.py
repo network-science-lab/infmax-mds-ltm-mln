@@ -9,59 +9,33 @@ from pathlib import Path
 from typing import Any
 
 import network_diffusion as nd
-import sys
 
-try:
-    import src
-except:
-    sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-    print(sys.path)
+# try:
+#     import sys
+#     import src
+# except:
+#     sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+#     print(sys.path)
 
 from src.models.mds.greedy_search import minimum_dominating_set_with_initial
+from src.models.mds.utils import ShareableListManager
 
 
-def get_mds_locimpr(net: nd.MultilayerNetwork) -> list[nd.MLNetworkActor]:
+def get_mds_locimpr(net: nd.MultilayerNetwork, timeout: int = None) -> list[nd.MLNetworkActor]:
     """Return driver actors for a given network using MDS and local improvement."""
-    # Step 1: Compute initial Minimum Dominating Set
+    # step 1: compute initial Minimum Dominating Set
     initial_dominating_set: set[Any] = set()
     for layer in net.layers:
         initial_dominating_set = minimum_dominating_set_with_initial(
             net, layer, initial_dominating_set
         )
 
-    # Step 2: Apply Local Improvement to enhance the Dominating Set
-    improved_dominating_set = LocalImprovement(net)(initial_dominating_set)
+    # step 2: apply Local Improvement to enhance the Dominating Set
+    if not timeout:
+        timeout=net.get_actors_num() * 90 // 1000,  # proportion is 1,5 minute per 1000 actors
+    improved_dominating_set = LocalImprovement(net)(initial_dominating_set, timeout)
 
     return [net.get_actor(actor_id) for actor_id in improved_dominating_set]
-
-
-import multiprocessing
-import time
-from  multiprocessing.shared_memory import ShareableList
-from multiprocessing.managers import SharedMemoryManager
-
-
-class ShareableListManager:
-
-    placeholder_token = None
-
-    def __init__(self, smm: SharedMemoryManager, length: int) -> None:
-        self._sl = smm.ShareableList([self.placeholder_token] * length)
-
-    @property
-    def sl(self) -> ShareableList:
-        return self._sl
-
-    @sl.setter
-    def sl(self, data: list[Any]) -> None:
-        for idx in range(len(self._sl)):
-            if idx < len(data):
-                self._sl[idx] = data[idx]
-            else:
-                self._sl[idx] = self.placeholder_token
-
-    def get_as_pruned_set(self) -> set[Any]:
-        return set(item for item in self._sl if item != self.placeholder_token)
 
 
 class LocalImprovement:
@@ -162,7 +136,7 @@ class LocalImprovement:
             if u in net_layer:
                 ed[layer] = {w for w in set(net_layer[u]) | {u} if domination[layer][w] == {u}}
             else:
-                ed[layer] = set()  # No nodes exclusively dominated by u in this layer
+                ed[layer] = set()  #nNo nodes exclusively dominated by u in this layer
         return ed
 
     def _find_replacement_candidates(
@@ -177,13 +151,13 @@ class LocalImprovement:
         """
         exclusively_dominated = self._get_excusevely_dominated_by_u(u, domination)
 
-        # Find valid replacement candidates
+        # find valid replacement candidates
         candidates = []
         for v in [x.actor_id for x in self.actors]:
             if v in dominating_set:
                 continue
 
-            # Ensure v exists in all layers where exclusively dominated nodes are expected
+            # ensure v exists in all layers where exclusively dominated nodes are expected
             if all(
                     v in self.net.layers[layer]
                     and nodes.issubset(set(self.net.layers[layer][v]) | {v})
@@ -224,8 +198,7 @@ class LocalImprovement:
                 if self._is_feasible(candidate_set):
                     improved_set = candidate_set
                     under_improvement = True
-                    # Break to re-check from scratch after every removal, ensuring first improvement strategy
-                    break
+                    break  # break to re-check from scratch after every removal
         return improved_set
 
 
