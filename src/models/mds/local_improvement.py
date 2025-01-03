@@ -1,6 +1,8 @@
 """Script with functions for driver actor selections with local improvement."""
 
 import multiprocessing
+import multiprocessing.managers
+import multiprocessing.shared_memory
 import random
 import time
 from pathlib import Path
@@ -33,6 +35,35 @@ def get_mds_locimpr(net: nd.MultilayerNetwork) -> list[nd.MLNetworkActor]:
     return [net.get_actor(actor_id) for actor_id in improved_dominating_set]
 
 
+import multiprocessing
+import time
+from  multiprocessing.shared_memory import ShareableList
+from multiprocessing.managers import SharedMemoryManager
+
+
+class ShareableListManager:
+
+    placeholder_token = None
+
+    def __init__(self, smm: SharedMemoryManager, length: int) -> None:
+        self._sl = smm.ShareableList([self.placeholder_token] * length)
+
+    @property
+    def sl(self) -> ShareableList:
+        return self._sl
+
+    @sl.setter
+    def sl(self, data: list[Any]) -> None:
+        for idx in range(len(self._sl)):
+            if idx < len(data):
+                self._sl[idx] = data[idx]
+            else:
+                self._sl[idx] = self.placeholder_token
+
+    def get_as_pruned_set(self) -> set[Any]:
+        return set(item for item in self._sl if item != self.placeholder_token)
+
+
 class LocalImprovement:
     """A class to prune initial Dominating Set."""
 
@@ -40,65 +71,69 @@ class LocalImprovement:
         self.net = net
         self.actors = net.get_actors()
 
-    def __call__(self, initial_set: set[Any], timeout: int = 10) -> set[Any]:
-        return self._local_improvement(initial_set=initial_set, timeout=timeout)
-
-    def _local_improvement(self, initial_set: set[Any], timeout: int) -> set[Any]:
-        """
-        Perform local improvement on the initial dominating set using the First Improvement strategy,
-        including the checking procedure after each feasible exchange move.
-        """
-        start_time = time.time()
-
-        # precompute domination for each node
-        dominating_set = set(initial_set)
-        domination = self._compute_domination(dominating_set)
+    def __call__(self, initial_set: set[Any], timeout=20) -> set[Any]:
+        with multiprocessing.managers.SharedMemoryManager() as smm:
+            slm = ShareableListManager(smm, len(initial_set))
+            proc = multiprocessing.Process(target=self._local_improvement, args=(initial_set, slm))
+            proc.start()
+            proc.join(timeout)
+            if proc.is_alive():
+                proc.terminate()
+                print("Timeout reached, returning best-so-far solution.")
+            return slm.get_as_pruned_set()
+    
+    def _local_improvement(self, initial_set: set[Any], final_set: ShareableListManager) -> None:
+        """Perform local improvement on the initial DS using the First Improvement strategy."""
+        curr_dominating_set = set(initial_set)
+        domination = self._compute_domination(curr_dominating_set)
+        print(len(initial_set))
 
         improvement = True
         while improvement:
-            if time.time() - start_time > timeout:
-                break
             improvement = False
 
             # shuffle the dominating set to diversify search of neighbors
-            current_solution = list(dominating_set)
-            random.shuffle(current_solution)
+            curr_dominating_list = list(curr_dominating_set)
+            random.shuffle(curr_dominating_list)
 
-            for u in current_solution:
+            for u in curr_dominating_list:
 
-                # identify candidate replacements v not in D, but only those leading to a feasible solution
-                candidates_v = self._find_replacement_candidates(u, dominating_set, domination)
+                # identify candidate replacements only which lead to a feasible solution
+                candidates_v = self._find_replacement_candidates(u, curr_dominating_set, domination)
                 random.shuffle(candidates_v)
 
                 for v in candidates_v:
+    
                     # store old solution for rollback if no improvement after checking
-                    old_dominating_set = set(dominating_set)
+                    old_dominating_set = set(curr_dominating_set)
 
                     # attempt the exchange move
-                    new_dominating_set = (dominating_set - {u}) | {v}
+                    new_dominating_set = (curr_dominating_set - {u}) | {v}
                     if self._is_feasible(new_dominating_set):
-                        # After a feasible exchange, perform the checking procedure to remove redundancies
+
+                        # after a feasible exchange remove redundancies
                         reduced_set = self._remove_redundant_vertices(new_dominating_set)
 
                         # check if we actually improved (reduced the size of the solution)
                         if len(reduced_set) < len(old_dominating_set):
-                            # We have found an improvement, update domination and break
-                            dominating_set = reduced_set
-                            domination = self._compute_domination(dominating_set)
+
+                            # if so update domination and break
+                            curr_dominating_set = reduced_set
+                            final_set.sl = list(curr_dominating_set)
+                            domination = self._compute_domination(curr_dominating_set)
                             improvement = True
                             break
+    
+                        # no improvement after redundancy removal, revert to old solution
                         else:
-                            # no improvement after redundancy removal, revert to old solution
-                            dominating_set = old_dominating_set
+                            curr_dominating_set = old_dominating_set
 
-                        print(len(dominating_set))
+                        print(len(curr_dominating_set))
 
                 # if not feasible, just continue trying other candidates or restart the outer loop
                 # after finding the first improvement
                 if improvement:
                     break
-
-        return dominating_set
 
     def _compute_domination(self, dominating_set: set[Any]) -> dict[str, dict[Any, set[Any]]]:
         """
