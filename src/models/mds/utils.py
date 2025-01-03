@@ -1,6 +1,33 @@
 import warnings
+from multiprocessing.managers import SharedMemoryManager
+from  multiprocessing.shared_memory import ShareableList
+from typing import Any
 
 import network_diffusion as nd
+
+
+class ShareableListManager:
+    """A wrapper to SharableList used as a dump for temporary MDS solution."""
+
+    placeholder_token = None
+
+    def __init__(self, smm: SharedMemoryManager, length: int) -> None:
+        self._sl = smm.ShareableList([self.placeholder_token] * length)
+
+    @property
+    def sl(self) -> ShareableList:
+        return self._sl
+
+    @sl.setter
+    def sl(self, data: list[Any]) -> None:
+        for idx in range(len(self._sl)):
+            if idx < len(data):
+                self._sl[idx] = data[idx]
+            else:
+                self._sl[idx] = self.placeholder_token
+
+    def get_as_pruned_set(self) -> set[Any]:
+        return set(item for item in self._sl if item != self.placeholder_token)
 
 
 def is_dominating_set(candidate_ds: set[nd.MLNetworkActor], network: nd.MultilayerNetwork) -> bool:
