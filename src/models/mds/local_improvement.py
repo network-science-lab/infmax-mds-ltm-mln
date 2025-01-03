@@ -9,13 +9,13 @@ from typing import Any
 
 import network_diffusion as nd
 
-try:
-    import sys
-    from pathlib import Path
-    import src
-except:
-    sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-    print(sys.path)
+# try:
+#     import sys
+#     from pathlib import Path
+#     import src
+# except:
+#     sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+#     print(sys.path)
 
 from src.models.mds.greedy_search import minimum_dominating_set_with_initial
 from src.models.mds.utils import ShareableListManager
