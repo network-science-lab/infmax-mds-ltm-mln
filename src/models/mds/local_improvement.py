@@ -1,12 +1,13 @@
 """Script with functions for driver actor selections with local improvement."""
 
+import multiprocessing
 import random
 import time
+from pathlib import Path
 from typing import Any
 
 import network_diffusion as nd
 import sys
-from pathlib import Path
 
 try:
     import src
@@ -38,46 +39,48 @@ class LocalImprovement:
     def __init__(self, net: nd.MultilayerNetwork):
         self.net = net
         self.actors = net.get_actors()
-        self.actor_ids = [x.actor_id for x in self.actors]
-        self._cache = {}
-        self._last_dominating_set = None
 
-    def __call__(self,initial_set: set[Any]) -> set[Any]:
-        return self.local_improvement(initial_set)
+    def __call__(self, initial_set: set[Any], timeout: int = 10) -> set[Any]:
+        return self._local_improvement(initial_set=initial_set, timeout=timeout)
 
-    def local_improvement(self, initial_set: set[Any]) -> set[Any]:
+    def _local_improvement(self, initial_set: set[Any], timeout: int) -> set[Any]:
         """
         Perform local improvement on the initial dominating set using the First Improvement strategy,
         including the checking procedure after each feasible exchange move.
         """
-        dominating_set = set(initial_set)
+        start_time = time.time()
 
-        # Precompute domination for each node
+        # precompute domination for each node
+        dominating_set = set(initial_set)
         domination = self._compute_domination(dominating_set)
 
         improvement = True
         while improvement:
+            if time.time() - start_time > timeout:
+                break
             improvement = False
-            # Shuffle the dominating set to diversify search of neighbors
+
+            # shuffle the dominating set to diversify search of neighbors
             current_solution = list(dominating_set)
             random.shuffle(current_solution)
 
             for u in current_solution:
-                # Identify candidate replacements v not in D, but only those leading to a feasible solution
+
+                # identify candidate replacements v not in D, but only those leading to a feasible solution
                 candidates_v = self._find_replacement_candidates(u, dominating_set, domination)
                 random.shuffle(candidates_v)
 
                 for v in candidates_v:
-                    # Store old solution for rollback if no improvement after checking
+                    # store old solution for rollback if no improvement after checking
                     old_dominating_set = set(dominating_set)
 
-                    # Attempt the exchange move
+                    # attempt the exchange move
                     new_dominating_set = (dominating_set - {u}) | {v}
                     if self._is_feasible(new_dominating_set):
                         # After a feasible exchange, perform the checking procedure to remove redundancies
                         reduced_set = self._remove_redundant_vertices(new_dominating_set)
 
-                        # Check if we actually improved (reduced the size of the solution)
+                        # check if we actually improved (reduced the size of the solution)
                         if len(reduced_set) < len(old_dominating_set):
                             # We have found an improvement, update domination and break
                             dominating_set = reduced_set
@@ -85,17 +88,17 @@ class LocalImprovement:
                             improvement = True
                             break
                         else:
-                            # No improvement after redundancy removal, revert to old solution
+                            # no improvement after redundancy removal, revert to old solution
                             dominating_set = old_dominating_set
-                            # domination stays the same, no improvement here
-                    # If not feasible, just continue trying other candidates
 
+                        print(len(dominating_set))
+
+                # if not feasible, just continue trying other candidates or restart the outer loop
+                # after finding the first improvement
                 if improvement:
-                    # Restart the outer loop after finding the first improvement
                     break
 
         return dominating_set
-
 
     def _compute_domination(self, dominating_set: set[Any]) -> dict[str, dict[Any, set[Any]]]:
         """
@@ -104,9 +107,6 @@ class LocalImprovement:
         Return a dictionary where keys are layer names and values are dictionaries mapping node IDs
         to sets of dominators in that layer.
         """
-        if dominating_set == self._last_dominating_set:
-            return self._cache
-
         domination_map = {
             layer: {actor.actor_id: set() for actor in self.actors} for layer in self.net.layers
         }
@@ -116,8 +116,6 @@ class LocalImprovement:
                     domination_map[l_name][actor_id].add(actor_id)  # a node dominates itself
                     for neighbour in l_graph[actor_id]:
                         domination_map[l_name][neighbour].add(actor_id)
-        self._cache = domination_map
-        self._last_dominating_set = set(dominating_set)
         return domination_map
 
     def _get_excusevely_dominated_by_u(
@@ -146,7 +144,7 @@ class LocalImprovement:
 
         # Find valid replacement candidates
         candidates = []
-        for v in self.actor_ids:
+        for v in [x.actor_id for x in self.actors]:
             if v in dominating_set:
                 continue
 
@@ -162,7 +160,7 @@ class LocalImprovement:
 
     def _is_feasible(self, dominating_set: set[Any]) -> bool:
         """Check if the dominating set is feasible across all layers."""
-        for _, l_graph in net.layers.items():
+        for _, l_graph in self.net.layers.items():
             dominated = set()
             for actor_id in dominating_set:
                 if actor_id in l_graph.nodes:
