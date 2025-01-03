@@ -1,17 +1,25 @@
 """Script with functions for driver actor selections with local improvement."""
 
 import random
-from typing import Any, List, Set
+from typing import Any
 
 import network_diffusion as nd
+import sys
+from pathlib import Path
+
+try:
+    import src
+except:
+    sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+    print(sys.path)
 
 from src.models.mds.greedy_search import minimum_dominating_set_with_initial
 
 
-def get_mds_locimpr(net: nd.MultilayerNetwork) -> List[nd.MLNetworkActor]:
+def get_mds_locimpr(net: nd.MultilayerNetwork) -> list[nd.MLNetworkActor]:
     """Return driver actors for a given network using MDS and local improvement."""
     # Step 1: Compute initial Minimum Dominating Set
-    initial_dominating_set: Set[Any] = set()
+    initial_dominating_set: set[Any] = set()
     for layer in net.layers:
         initial_dominating_set = minimum_dominating_set_with_initial(
             net, layer, initial_dominating_set
@@ -23,7 +31,7 @@ def get_mds_locimpr(net: nd.MultilayerNetwork) -> List[nd.MLNetworkActor]:
     return [net.get_actor(actor_id) for actor_id in improved_dominating_set]
 
 
-def local_improvement(net: nd.MultilayerNetwork, initial_set: set) -> set:
+def local_improvement(net: nd.MultilayerNetwork, initial_set: set[Any]) -> set[Any]:
     """
     Perform local improvement on the initial dominating set using the First Improvement strategy,
     including the checking procedure after each feasible exchange move.
@@ -31,7 +39,8 @@ def local_improvement(net: nd.MultilayerNetwork, initial_set: set) -> set:
     dominating_set = set(initial_set)
 
     # Precompute domination for each node
-    domination = compute_domination(net, dominating_set)
+    compute_domination = ComputeDomination(net=net)
+    domination = compute_domination(dominating_set)
 
     improvement = True
     while improvement:
@@ -59,7 +68,7 @@ def local_improvement(net: nd.MultilayerNetwork, initial_set: set) -> set:
                     if len(reduced_set) < len(old_dominating_set):
                         # We have found an improvement, update domination and break
                         dominating_set = reduced_set
-                        domination = compute_domination(net, dominating_set)
+                        domination = compute_domination(dominating_set)
                         improvement = True
                         break
                     else:
@@ -75,28 +84,40 @@ def local_improvement(net: nd.MultilayerNetwork, initial_set: set) -> set:
     return dominating_set
 
 
-def compute_domination(net: nd.MultilayerNetwork, dominating_set: Set[Any]) -> dict:
-    """
-    Compute the domination map for the current dominating set per layer.
+class ComputeDomination:
+    """Compute the domination map for the current dominating set per layer."""
 
-    Returns a dictionary where keys are layer names and values are dictionaries
-    mapping node IDs to sets of dominators in that layer.
-    """
-    domination_map = {
-        layer: {actor.actor_id: set() for actor in net.get_actors()}
-        for layer in net.layers
-    }
+    def __init__(self, net: nd.MultilayerNetwork):
+        self.net = net
+        self.actors = net.get_actors()
+        self._cache = {}
+        self._last_dominating_set = None
 
-    for layer, net_layer in net.layers.items():
-        for actor_id in dominating_set:
-            if actor_id in net_layer.nodes:
-                domination_map[layer][actor_id].add(actor_id)  # A node dominates itself
-                for neighbor in net_layer[actor_id]:
-                    domination_map[layer][neighbor].add(actor_id)
-    return domination_map
+    def __call__(self, dominating_set: set[Any]) -> dict:
+        """
+        Return a dictionary where keys are layer names and values are dictionaries mapping node IDs
+        to sets of dominators in that layer.
+        """
+        if dominating_set == self._last_dominating_set:
+            return self._cache
+
+        domination_map = {
+            layer: {actor.actor_id: set() for actor in self.actors}
+            for layer in self.net.layers
+        }
+        for l_name, l_graph in self.net.layers.items():
+            for actor_id in dominating_set:
+                if actor_id in l_graph.nodes:
+                    domination_map[l_name][actor_id].add(actor_id)  # a node dominates itself
+                    for neighbour in l_graph[actor_id]:
+                        domination_map[l_name][neighbour].add(actor_id)
+        self._cache = domination_map
+        self._last_dominating_set = set(dominating_set)
+        return domination_map
 
 
-def find_replacement_candidates(net: nd.MultilayerNetwork, u: Any, dominating_set: Set[Any], domination: dict) -> List[
+
+def find_replacement_candidates(net: nd.MultilayerNetwork, u: Any, dominating_set: set[Any], domination: dict) -> list[
     Any]:
     """
     Find candidate nodes v that can replace u in the dominating set,
@@ -130,39 +151,38 @@ def find_replacement_candidates(net: nd.MultilayerNetwork, u: Any, dominating_se
     return candidates
 
 
-def is_feasible(net: nd.MultilayerNetwork, dominating_set: Set[Any]) -> bool:
-    """
-    Check if the dominating set is feasible across all layers.
-    """
-    for layer, net_layer in net.layers.items():
+def is_feasible(net: nd.MultilayerNetwork, dominating_set: set[Any]) -> bool:
+    """Check if the dominating set is feasible across all layers."""
+    for _, l_graph in net.layers.items():
         dominated = set()
         for actor_id in dominating_set:
-            if actor_id in net_layer.nodes:
+            if actor_id in l_graph.nodes:
                 dominated.add(actor_id)
-                dominated.update(net_layer[actor_id])
-        if dominated != set(net_layer.nodes()):
+                dominated.update(l_graph[actor_id])
+        if dominated != set(l_graph.nodes()):
             return False
     return True
 
 
-def remove_redundant_vertices(net, dominating_set):
+def remove_redundant_vertices(net: nd.MultilayerNetwork, dominating_set: set[Any]) -> set[any]:
     """
     Try to remove redundant vertices from the dominating_set without losing feasibility.
+
     A vertex is redundant if removing it still leaves all nodes dominated.
     Returns a new dominating set with as many redundant vertices removed as possible.
+    We'll attempt to remove vertices one by one. A simple (although not necessarily minimum)
+    approach is to try removing each vertex and see if the set remains feasible. If yes,
+    permanently remove it.
     """
-    # We'll attempt to remove vertices one by one.
-    # A simple (although not necessarily minimum) approach is to try removing each vertex
-    # and see if the set remains feasible. If yes, permanently remove it.
-    improved = True
     improved_set = set(dominating_set)
-    while improved:
-        improved = False
-        for d in list(improved_set):
+    under_improvement = True
+    while under_improvement:
+        under_improvement = False
+        for d in improved_set:
             candidate_set = improved_set - {d}
             if is_feasible(net, candidate_set):
                 improved_set = candidate_set
-                improved = True
+                under_improvement = True
                 # Break to re-check from scratch after every removal, ensuring first improvement strategy
                 break
     return improved_set
