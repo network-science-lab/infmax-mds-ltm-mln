@@ -1,5 +1,0 @@
-outs:
-- md5: 7902b257e576b20dcca0ca0c085bb02e
-  size: 6320
-  hash: md5
-  path: similarities_mds.csv
