@@ -31,24 +31,22 @@ and kill the disk: `dvc pull data/raw_results` or just pre-preprocessed data wit
 To extract raw results and pack it into separate `zip` file run: `sh data/zip_raw_results_slim.sh`
 
 ## Structure of the repository
-```
+
+```bash
 .
 ├── README.md
-├── analysis                -> code to be merged into `src`
 ├── data
-│   ├── experiment_setup    -> template configuration files with actulally used experimental setup
 │   ├── networks            -> networks used in exmeriments
 │   ├── processed_results
 │   ├── raw_results
 │   └── test                -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
+├── experiments
+│   ├── analysis
+│   └── configs             -> exemplary configuration files
 ├── src                     -> scripts to execute experiments and process the results
-├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── run_experiments.py      -> an entrypoint to trigger the pipeline to evaluate MDS in InfMax
 ├── test_reproducibility.py -> E2E test to prove that results can be repeated
-├── produce_comparison.py   -> produce CSV with comparison between (non)MDS w.r.t. dynamics and gain
-├── visualise_mds.py        -> produce structural and cantrality-based visualisations of MDS
-└── visualise_results.ipynb -> a notebook to produce results analysis
 ```
 
 ## Running the pipeline
@@ -86,7 +84,17 @@ Results are supposed to be fully reproducable. There is a test for that: `test_r
 
 ## Obtaining analysis of results
 
-To process raw results please execute the notebook or one of the python scripts in the root of the
-repository listed above. Note, that it can take while for jupyter to get all outcomes. Threfore,
-in order to obtain complete visualisations we recommend to execute the notebook in non-interactive
-mode: `jupyter nbconvert visualise_results.ipynb --to python --execute`
+To process raw results please execute scripts in `experiments/analysis` directory in the order as 
+depicted in a following tree:
+
+```bash
+.
+├── visualise_results.ipynb
+├── produce_comparison.py
+│   └── generate_profile_reports.py
+├── visualise_mds.py
+└── quantitative.py
+    └── per_round_average.py
+        └── compute_average.py
+            └── mds_vs_ranking_average.py
+```
