@@ -21,7 +21,11 @@ from src.models.mds.greedy_search import minimum_dominating_set_with_initial
 from src.models.mds.utils import ShareableListManager
 
 
-def get_mds_locimpr(net: nd.MultilayerNetwork, timeout: int = None) -> list[nd.MLNetworkActor]:
+def get_mds_locimpr(
+    net: nd.MultilayerNetwork,
+    timeout: int = None,
+    debug: bool = False
+) -> list[nd.MLNetworkActor]:
     """Return driver actors for a given network using MDS and local improvement."""
     # step 1: compute initial Minimum Dominating Set
     initial_dominating_set: set[Any] = set()
@@ -32,8 +36,8 @@ def get_mds_locimpr(net: nd.MultilayerNetwork, timeout: int = None) -> list[nd.M
 
     # step 2: apply Local Improvement to enhance the Dominating Set
     if not timeout:
-        timeout=net.get_actors_num() * 90 // 1000  # proportion is 1,5 minute per 1000 actors
-    improved_dominating_set = LocalImprovement(net)(initial_dominating_set, timeout)
+        timeout=net.get_actors_num() * 300 // 1000  # proportion is 5 minutes per 1000 actors
+    improved_dominating_set = LocalImprovement(net, timeout, debug)(initial_dominating_set)
 
     return [net.get_actor(actor_id) for actor_id in improved_dominating_set]
 
@@ -41,16 +45,19 @@ def get_mds_locimpr(net: nd.MultilayerNetwork, timeout: int = None) -> list[nd.M
 class LocalImprovement:
     """A class to prune initial Dominating Set."""
 
-    def __init__(self, net: nd.MultilayerNetwork):
+    def __init__(self, net: nd.MultilayerNetwork, timeout: float, debug: bool = False):
         self.net = net
         self.actors = net.get_actors()
+        self.timeout = timeout
+        self.debug = debug
 
-    def __call__(self, initial_set: set[Any], timeout=20) -> set[Any]:
+    def __call__(self, initial_set: set[Any]) -> set[Any]:
         with multiprocessing.managers.SharedMemoryManager() as smm:
             slm = ShareableListManager(smm, len(initial_set))
+            slm.sl = list(initial_set)
             proc = multiprocessing.Process(target=self._local_improvement, args=(initial_set, slm))
             proc.start()
-            proc.join(timeout)
+            proc.join(self.timeout)
             if proc.is_alive():
                 proc.terminate()
                 print("Timeout reached, returning best-so-far solution.")
@@ -60,13 +67,13 @@ class LocalImprovement:
         """Perform local improvement on the initial DS using the First Improvement strategy."""
         curr_dominating_set = set(initial_set)
         domination = self._compute_domination(curr_dominating_set)
-        print(len(initial_set))
+        if self.debug: print(f"Current length of MDS: {len(initial_set)}")
 
         improvement = True
         while improvement:
             improvement = False
 
-            # shuffle the dominating set to diversify search of neighbors
+            # shuffle the dominating set to diversify search of neighbours
             curr_dominating_list = list(curr_dominating_set)
             random.shuffle(curr_dominating_list)
 
@@ -98,14 +105,13 @@ class LocalImprovement:
                             improvement = True
                             break
     
-                        # no improvement after redundancy removal, revert to old solution
+                        # if no improvement after redundancy removal, revert to old solution
                         else:
                             curr_dominating_set = old_dominating_set
 
-                        print(len(curr_dominating_set))
+                        if self.debug: print(f"Current length of MDS: {len(curr_dominating_set)}")
 
-                # if not feasible, just continue trying other candidates or restart the outer loop
-                # after finding the first improvement
+                # restart the outer loop after finding the first improvement, otherwise exit funct.
                 if improvement:
                     break
 
@@ -211,7 +217,7 @@ if __name__ == "__main__":
     net = load_network("ckm_physicians", as_tensor=False)
 
     start_time = time.time()
-    mds = get_mds_locimpr(net)
+    mds = get_mds_locimpr(net, debug=True)
     # mds = get_mds_greedy(net)
     end_time = time.time()
     elapsed_time = end_time - start_time
