@@ -1,0 +1,5 @@
+outs:
+- md5: 1232347942fd8ced87bea373a4a4ced6
+  size: 42603599
+  hash: md5
+  path: rankings.zip
