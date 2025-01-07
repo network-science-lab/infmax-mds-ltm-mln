@@ -49,14 +49,16 @@ def main(
     else:
         raise ValueError("unknown split type!")
 
-    print(f"Current split takes {round(len(ddf) / len(df) * 100, 3)} prct of valid experiments")
+    print(f"Split {split_type} takes {round(len(ddf) / len(df) * 100, 3)} prct of valid experiments")
     report = ydata_profiling.ProfileReport(ddf)
     report.to_file(out_dir / f"{split_type}.html")
 
 
 if __name__ == "__main__":
-    in_path = Path("data/processed_results/quantitative_comparison.csv")
-    out_dir = Path("data/processed_results/profile_reports")
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    in_path = root_dir / Path("data/processed_results/quantitative_comparison.csv")
+    out_dir = root_dir / Path("data/processed_results/profile_reports")
+    out_dir.mkdir(exist_ok=True, parents=True)
     main(in_path, out_dir, "gain")
     main(in_path, out_dir, "auc")
     main(in_path, out_dir, "gain_and_auc")

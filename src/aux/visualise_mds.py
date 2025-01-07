@@ -8,13 +8,14 @@ import networkx as nx
 import network_diffusion as nd
 import pandas as pd
 
-from src.visualisation import Results
-
-
-ACTORS_COLOUR = "magenta"
-MDS_ACTORS_COLOUR = "#210070"
-ACTORS_SHAPE = "o"
-CENTRAL_ACTORS_SHAPE = "*"
+from src.aux.slicer_plotter import ResultsSlicer
+from src.aux import (
+    MDS_ACTORS_COLOUR,
+    NML_ACTORS_COLOUR,
+    OTHER_ACTORS_COLOUR,
+    OTHER_ACTORS_SHAPE,
+    CENTRAL_ACTORS_SHAPE,
+)
     
 
 # TODO: use nd based function once it gets updated to the current form!
@@ -36,7 +37,7 @@ def squeeze_by_neighbourhood(
     return squeezed_net
     
 
-class MDSPlotter:
+class MDSVisualiser:
     """Visualise MDS on the network's structure and on centralitiy distributions."""
 
     def __init__(
@@ -67,10 +68,10 @@ class MDSPlotter:
             ax=ax,
             pos={node_id: nodes_pos[node_id]},
             node_size=150,
-            node_color=MDS_ACTORS_COLOUR if node_id in mds else ACTORS_COLOUR,
+            node_color=MDS_ACTORS_COLOUR if node_id in mds else OTHER_ACTORS_COLOUR,
             node_shape=(
                 CENTRAL_ACTORS_SHAPE if nodes_degrees.loc[node_id]["degree"] >= degree_thresh
-                else ACTORS_SHAPE
+                else OTHER_ACTORS_SHAPE
             ),
             alpha=0.5,
         )
@@ -99,7 +100,7 @@ class MDSPlotter:
                 pos=pos,
                 alpha=0.25,
                 width=1,
-                edge_color=ACTORS_COLOUR,
+                edge_color=OTHER_ACTORS_COLOUR,
             )
             for node in layer_graph.nodes:
                 self._draw_node(
@@ -149,7 +150,7 @@ class MDSPlotter:
             cantrality_hist.keys(),
             cantrality_hist.values(),
             marker="o",
-            color=ACTORS_COLOUR,
+            color=OTHER_ACTORS_COLOUR,
             alpha=1,
         )
         ax.set_xlim(left=0, auto=True)
@@ -160,7 +161,7 @@ class MDSPlotter:
     def plot_centralities(self) -> None:
         fig, axs = plt.subplots(nrows=1, ncols=2)
         for idx, centr_name in enumerate(["degree", "neighbourhood_size"]):
-            centr_dict = Results.prepare_centrality(self.net, centr_name)
+            centr_dict = ResultsSlicer.prepare_centrality(self.net, centr_name)
             self._plot_centrality(
                 centr_name=centr_name,
                 centrality_vals=centr_dict[0],

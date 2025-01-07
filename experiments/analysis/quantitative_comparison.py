@@ -1,6 +1,7 @@
 """A script to produce comparison when mds was better both in terms of gain and dynamics."""
 
 import glob
+import sys
 import re
 from pathlib import Path
 from typing import Literal
@@ -8,13 +9,16 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
-from src import visualisation
+root_path = Path(".").resolve()
+sys.path.append(str(root_path))
+
+from src.aux import slicer_plotter
 
 
 def prepare_cdfs(mds_slice: pd.DataFrame, nml_slice: pd.DataFrame) -> dict[str, np.ndarray | int]:
     # compute raw cdf
-    mds_cdf = visualisation.Results.mean_expositions_rec(mds_slice)["cdf"]
-    nml_cdf = visualisation.Results.mean_expositions_rec(nml_slice)["cdf"]
+    mds_cdf = slicer_plotter.ResultsSlicer.mean_expositions_rec(mds_slice)["cdf"]
+    nml_cdf = slicer_plotter.ResultsSlicer.mean_expositions_rec(nml_slice)["cdf"]
     # pad the shorter one
     padding_size = max(len(nml_cdf), len(mds_cdf))
     nml_cdf = np.pad(
@@ -48,25 +52,25 @@ def area_under_curve(cdf: np.ndarray, start_val: int, max_value: int) -> float:
     return area / ((max_value - start_val) * len(cdf))
 
 
-def load_data(batches: str = "1,2,3,4") -> visualisation.Results:
+def load_data() -> slicer_plotter.ResultsSlicer:
     print("loading data")
-    return visualisation.Results(
+    return slicer_plotter.ResultsSlicer(
         [
             csv_file for csv_file in glob.glob(r"data/raw_results/**", recursive=True)
-            if re.search(fr"batch_([{batches}])/.*\.csv$", csv_file)
+            if re.search(r"batch_([1-9][0-2]?)/.*\.csv$", csv_file)
         ]
     )
 
 def produce_quantitative_results(
-    results: visualisation.Results,
+    results: slicer_plotter.ResultsSlicer,
     mds_type: Literal["d^", "D^"]
 ) -> pd.DataFrame:
     quantitative_results_aggr = []
 
-    for page_case in visualisation.Plotter().yield_page():
+    for page_case in slicer_plotter.ResultsPlotter().yield_page():
         print(page_case)
 
-        for fig_case in visualisation.Plotter().yield_figure(protocol=page_case[1]):
+        for fig_case in slicer_plotter.ResultsPlotter().yield_figure(protocol=page_case[1]):
             print(f"\t{fig_case}")
 
             nml_slice = results.get_slice(
@@ -129,6 +133,6 @@ def produce_quantitative_results(
 if __name__ == "__main__":
     out_dir = Path("./data/processed_results/")
     out_dir.mkdir(exist_ok=True, parents=True)
-    raw_results = load_data("1,2,3,4")
-    quantitative_results_df = produce_quantitative_results(raw_results, "d^")
+    raw_results = load_data()
+    quantitative_results_df = produce_quantitative_results(raw_results, "D^")
     quantitative_results_df.to_csv(out_dir / "quantitative_comparison.csv")

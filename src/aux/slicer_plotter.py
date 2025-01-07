@@ -14,15 +14,18 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.stats import entropy
 
+from src.aux import NML_ACTORS_COLOUR, MDS_ACTORS_COLOUR, OTHER_ACTORS_COLOUR
 
-class Results:
+
+class ResultsSlicer:
 
     def __init__(self, raw_results_path: str) -> None:
         self.raw_df = self.read_raw_df(raw_results_path)
 
     @staticmethod
-    def read_raw_df(raw_result_paths: list[Path]) -> pd.DataFrame:
+    def read_raw_df(raw_result_paths: list[str]) -> pd.DataFrame:
         dfs = []
+        print(set(Path(csv_path).parent.name for csv_path in raw_result_paths))
         for csv_path in raw_result_paths:
             csv_df = pd.read_csv(csv_path)
             dfs.append(csv_df)
@@ -106,8 +109,7 @@ class JSONParser:
     @staticmethod
     def parse_json_name(json_name):
         """Parse simulation params and match only those which utilised MDS."""
-        pattern = r"^ss-(?P<ss_method>d\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
-        # pattern = r"^ss-(?P<ss_method>.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
+        pattern = r"^ss-(?P<ss_method>D\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
         match = re.match(pattern, json_name)
         if match:
             return match.groupdict()
@@ -157,7 +159,7 @@ def analyse_set_similarity(sets: list[set[str]]) -> dict[str, float]:
     }
 
 
-class Plotter:
+class ResultsPlotter:
 
     _protocol_and = "AND"
     _protocol_or = "OR"
@@ -244,8 +246,8 @@ class Plotter:
     ) -> None:
         plt.rc("legend", fontsize=8)
         x_max = max(len(record_mds["avg"]), len(record_nml["avg"])) - 1
-        self.plot_avg_with_std(record_mds, ax, "MDS", "greenyellow")
-        self.plot_avg_with_std(record_nml, ax, "NML", "sandybrown")
+        self.plot_avg_with_std(record_mds, ax, "MDS", MDS_ACTORS_COLOUR)
+        self.plot_avg_with_std(record_nml, ax, "NML", NML_ACTORS_COLOUR)
         ax.hlines(y=actors_nb, xmin=0, xmax=x_max, color="red")
         # ax.set_xlabel("Step")
         # ax.set_ylabel("Expositions")
@@ -271,15 +273,15 @@ class Plotter:
         seed_budget: int,
         ax: matplotlib.axes.Axes,
     ) -> None:
-        sf_mds = Results.get_seeds_with_frequency(record_mds)
-        sf_nml = Results.get_seeds_with_frequency(record_nml)
+        sf_mds = ResultsSlicer.get_seeds_with_frequency(record_mds)
+        sf_nml = ResultsSlicer.get_seeds_with_frequency(record_nml)
         plt.rc("legend", fontsize=8)
         ymax = max(hist_centralities.values()) * 1.2
         degrees_mds = [all_centralities[seed] for seed in sf_mds[0]]
         degrees_nml = [all_centralities[seed] for seed in sf_nml[0]]
-        ax.scatter(hist_centralities.keys(), hist_centralities.values(), marker=".")
-        ax.vlines(x=degrees_mds, ymin=0, ymax=ymax/2, label="MDS", colors="greenyellow", alpha=sf_mds[1])
-        ax.vlines(x=degrees_nml, ymin=ymax/2, ymax=ymax, label="NML", colors="sandybrown", alpha=sf_nml[1])
+        ax.scatter(hist_centralities.keys(), hist_centralities.values(), marker=".", color=OTHER_ACTORS_COLOUR)
+        ax.vlines(x=degrees_mds, ymin=0, ymax=ymax/2, label="MDS", colors=MDS_ACTORS_COLOUR, alpha=sf_mds[1])
+        ax.vlines(x=degrees_nml, ymin=ymax/2, ymax=ymax, label="NML", colors=NML_ACTORS_COLOUR, alpha=sf_nml[1])
         ax.set_xlim(left=0, auto=True)
         ax.set_ylim(bottom=0, top=ymax, auto=True)
         ax.yaxis.set_visible(False)
