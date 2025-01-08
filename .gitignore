@@ -1,7 +1,9 @@
 **/__pycache__
 **/.DS_Store
+*.json
+.idea
 .vscode
+data/experiment_setup
+doodles
 example_results
-my_config.yaml
-config_and.yaml
-config_or.yaml
+visualise.py
