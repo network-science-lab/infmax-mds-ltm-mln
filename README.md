@@ -96,8 +96,7 @@ under `data/processed_results`:
 ├── similarities_mds.py
 ├── similarities_seeds.py
 ├── visualisations_mds.py
-└── quantitative
-    └── per_round_average.py
-        └── compute_average.py
-            └── mds_vs_ranking_average.py
+└── quantitative/compute_average.py                 (e.g. `computer_average.py --strategy or`)
+    └── quantitative/mds_vs_ranking_average.py      (e.g. `mds_vs_ranking_average.py --strategy or`)
+        └── quantitative/mds_vs_ranking_average.py  (e.g. `per_round_average.py --strategy and`)
 ```
