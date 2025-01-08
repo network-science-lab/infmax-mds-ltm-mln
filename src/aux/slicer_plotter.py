@@ -120,6 +120,7 @@ class JSONParser:
         minimal_dominating_sets = []
         with zipfile.ZipFile(zip_path, "r") as z:
             for file_name in z.namelist():
+                print(file_name)
                 simulation_params = self.parse_json_name(file_name)
                 if simulation_params:
                     try:

@@ -85,15 +85,18 @@ Results are supposed to be fully reproducable. There is a test for that: `test_r
 ## Obtaining analysis of results
 
 To process raw results please execute scripts in `experiments/analysis` directory in the order as 
-depicted in a following tree:
+depicted in a following tree. Please note, that names of scripts reflect names of genreated files
+under `data/processed_results`:
 
 ```bash
 .
-├── visualise_results.ipynb
-├── produce_comparison.py
-│   └── generate_profile_reports.py
-├── visualise_mds.py
-└── quantitative.py
+├── distr_expos.ipynb
+├── quantitative_comparison.py
+│   └── profile_reports.py
+├── similarities_mds.py
+├── similarities_seeds.py
+├── visualisations_mds.py
+└── quantitative
     └── per_round_average.py
         └── compute_average.py
             └── mds_vs_ranking_average.py
