@@ -1,10 +1,6 @@
 """A pipeline to plot MDS on random and real networks"""
 
-import sys
 from pathlib import Path
-
-root_path = Path(".").resolve()
-sys.path.append(str(root_path))
 
 from src.aux.network_generator import generate
 from src.aux.visualise_mds import MDSVisualiser
@@ -19,7 +15,8 @@ if __name__ == "__main__":
     # mds_func = greedy_search.get_mds_greedy
 
     # prepare outout directory
-    out_dir = root_path / "data/processed_results/visualisations_mds"
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    out_dir = root_dir / "data/processed_results/visualisations_mds"
     out_dir.mkdir(exist_ok=True, parents=True)
     print(out_dir)
 

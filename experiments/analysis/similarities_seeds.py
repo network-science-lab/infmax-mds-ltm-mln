@@ -2,13 +2,9 @@
 
 import glob
 import re
-import sys
 from itertools import product
 from pathlib import Path
 from typing import Literal
-
-root_path = Path(__file__).resolve().parent.parent.parent
-sys.path.append(str(root_path))
 
 import pandas as pd
 from tqdm import tqdm
@@ -50,13 +46,14 @@ def generate_similarities_seeds(
 if __name__ == "__main__":
 
     # prepare outout directory
-    workdir = root_path / "data/processed_results"
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    workdir = root_dir / "data/processed_results"
     workdir.mkdir(exist_ok=True, parents=True)
 
     # read raw results
     results = ResultsSlicer(
         [
-            csv_file for csv_file in glob.glob(fr"{str(root_path)}/data/raw_results/**", recursive=True)
+            csv_file for csv_file in glob.glob(fr"{str(root_dir)}/data/raw_results/**", recursive=True)
             if re.search(r"batch_([1-9][0-2]?)/.*\.csv$", csv_file)
         ]
     )

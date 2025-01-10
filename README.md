@@ -18,6 +18,12 @@ conda activate infmax-mds-ltm-mln
 python -m ipykernel install --user --name=infmax-mds-ltm-mln
 ```
 
+To use scripts which produce analysis, install the source code:
+
+```bash
+pip install -e .
+```
+
 ## Data
 
 Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Google Drive. Please
@@ -95,8 +101,5 @@ under `data/processed_results`:
 │   └── profile_reports.py
 ├── similarities_mds.py
 ├── similarities_seeds.py
-├── visualisations_mds.py
-└── quantitative/compute_average.py                 (e.g. `computer_average.py --strategy or`)
-    └── quantitative/mds_vs_ranking_average.py      (e.g. `mds_vs_ranking_average.py --strategy or`)
-        └── quantitative/mds_vs_ranking_average.py  (e.g. `per_round_average.py --strategy and`)
+└── visualisations_mds.py
 ```

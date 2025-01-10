@@ -1,11 +1,7 @@
 """Statistical analysis of MDS rankings."""
 
-import sys
 from itertools import product
 from pathlib import Path
-
-root_path = Path(".").resolve()
-sys.path.append(str(root_path))
 
 import numpy as np
 import pandas as pd
@@ -64,7 +60,8 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
 if __name__ == "__main__":
 
     # prepare outout directory
-    workdir = root_path / "data/processed_results"
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    workdir = root_dir / "data/processed_results"
     workdir.mkdir(exist_ok=True, parents=True)
 
     # compute the DFs

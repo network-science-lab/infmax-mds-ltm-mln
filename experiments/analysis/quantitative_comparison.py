@@ -1,16 +1,12 @@
 """A script to produce comparison when mds was better both in terms of gain and dynamics."""
 
 import glob
-import sys
 import re
 from pathlib import Path
 from typing import Literal
 
 import numpy as np
 import pandas as pd
-
-root_path = Path(".").resolve()
-sys.path.append(str(root_path))
 
 from src.aux import slicer_plotter
 
@@ -131,7 +127,8 @@ def produce_quantitative_results(
 
 
 if __name__ == "__main__":
-    out_dir = Path("./data/processed_results/")
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    out_dir = root_dir / Path("./data/processed_results/")
     out_dir.mkdir(exist_ok=True, parents=True)
     raw_results = load_data()
     quantitative_results_df = produce_quantitative_results(raw_results, "D^")
