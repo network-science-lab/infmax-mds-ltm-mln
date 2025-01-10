@@ -174,21 +174,22 @@ class ResultsPlotter:
         "nghb_sd",
         "random",
     ]
-    _networks = [   
-        "aucs",
-        "ckm_physicians",
-        "er1",
-        "er2",
-        "er3",
-        "er5",
-        "lazega",
-        "l2_course_net_1",
-        "sf1",
-        "sf2",
-        "sf3",
-        "sf5",
-        "timik1q2009",
-    ]
+    _networks_groups = {
+        "aucs": "real",
+        "ckm_physicians": "real",
+        # "er1": "er",
+        "er2": "er",
+        "er3": "er",
+        "er5": "er",
+        "lazega": "real",
+        "l2_course_net_1": "real",
+        # "sf1": "sf",
+        "sf2": "sf",
+        "sf3": "sf",
+        "sf5": "sf",
+        "timik1q2009": "real",
+    }
+    _networks = list(_networks_groups.keys())
     _centralities = {
         "deg_c": "degree",
         "deg_cd": "degree",
@@ -208,6 +209,20 @@ class ResultsPlotter:
             self._networks,
             [self._protocol_or],
             self._ss_methods,
+        ):
+            yield or_case
+    
+    def yield_heatmap_config(self) -> Generator[tuple[str, str, str], None, None]:
+        for and_case in product(
+            self._ss_methods,
+            [self._protocol_and],
+            list(set(self._networks_groups.keys())),
+        ):
+            yield and_case
+        for or_case in product(
+            self._ss_methods,
+            [self._protocol_or],
+            list(set(self._networks_groups.keys())),
         ):
             yield or_case
     

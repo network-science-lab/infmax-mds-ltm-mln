@@ -1,6 +1,7 @@
 **/__pycache__
 **/.DS_Store
 *.json
+*.egg-info
 .idea
 .vscode
 data/experiment_setup

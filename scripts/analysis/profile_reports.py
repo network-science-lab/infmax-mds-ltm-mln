@@ -14,7 +14,7 @@ def main(
     # read csv with quantitative comparison
     df_raw = pd.read_csv(quantitative_comparison_path)
 
-    # scale doen gain to be in the same range as auc
+    # scale down gain to be in the same range as auc
     df_raw["mds_gain"] = df_raw["mds_gain"] / 100
     df_raw["nml_gain"] = df_raw["nml_gain"] / 100
 
@@ -23,6 +23,9 @@ def main(
         (df_raw["mds_gain"] == 0.) & (df_raw["nml_gain"] == .0)
     ].index).reset_index()
     df = df.drop(df.loc[df["ss_method"] == "random"].index).reset_index()
+
+     # drop records for single layered networks
+    df = df.drop(df.loc[df["network"].isin({"sf1", "er1"})].index).reset_index(drop=True)
 
     # case 1: get those cases where MDS attained better gain 
     if split_type == "gain":
