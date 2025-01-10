@@ -47,7 +47,7 @@ To extract raw results and pack it into separate `zip` file run: `sh data/zip_ra
 │   ├── raw_results
 │   └── test                -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
-├── experiments
+├── scripts
 │   ├── analysis
 │   └── configs             -> exemplary configuration files
 ├── src                     -> scripts to execute experiments and process the results
@@ -90,7 +90,7 @@ Results are supposed to be fully reproducable. There is a test for that: `test_r
 
 ## Obtaining analysis of results
 
-To process raw results please execute scripts in `experiments/analysis` directory in the order as 
+To process raw results please execute scripts in `scripts/analysis` directory in the order as 
 depicted in a following tree. Please note, that names of scripts reflect names of genreated files
 under `data/processed_results`:
 
