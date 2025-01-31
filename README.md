@@ -98,6 +98,7 @@ under `data/processed_results`:
 .
 ├── distr_expos.ipynb
 ├── quantitative_comparison.py
+│   ├── effectiveness_heatmaps.py
 │   └── profile_reports.py
 ├── similarities_mds.py
 ├── similarities_seeds.py
