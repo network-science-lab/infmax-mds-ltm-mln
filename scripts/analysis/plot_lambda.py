@@ -82,7 +82,9 @@ if __name__ == "__main__":
     )
 
     ax.set_xlim(left=min(x), right=max(x))
+    ax.set_xlabel("Simulation step")
     ax.set_ylim(bottom=0, top=1.1 * cdfs_slice["max_val"])
+    ax.set_ylabel("Number of exposed actors")
     ax.legend(loc="lower right")
 
     ax_aux_yticks_locations = np.linspace(cdfs_slice["start_val"], cdfs_slice["max_val"], 5)
