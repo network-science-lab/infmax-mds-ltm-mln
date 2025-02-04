@@ -5,47 +5,9 @@ import re
 from pathlib import Path
 from typing import Literal
 
-import numpy as np
 import pandas as pd
 
-from src.aux import slicer_plotter
-
-
-def prepare_cdfs(mds_slice: pd.DataFrame, nml_slice: pd.DataFrame) -> dict[str, np.ndarray | int]:
-    # compute raw cdf
-    mds_cdf = slicer_plotter.ResultsSlicer.mean_expositions_rec(mds_slice)["cdf"]
-    nml_cdf = slicer_plotter.ResultsSlicer.mean_expositions_rec(nml_slice)["cdf"]
-    # pad the shorter one
-    padding_size = max(len(nml_cdf), len(mds_cdf))
-    nml_cdf = np.pad(
-        nml_cdf,
-        (0, np.abs(padding_size - len(nml_cdf))),
-        "constant",
-        constant_values=nml_cdf[-1],
-    )
-    mds_cdf = np.pad(
-        mds_cdf,
-        (0, np.abs(padding_size - len(mds_cdf))),
-        "constant",
-        constant_values=mds_cdf[-1],
-    )
-    # obtain max available value and discounting number
-    nb_actors = (mds_slice["exposed_nb"] + mds_slice["unexposed_nb"]).iloc[0].item()
-    seed_nb = nml_slice["seed_nb"].iloc[0].item()
-    # return CDFs and min/max values
-    return {
-        "mds_cdf": mds_cdf,
-        "nml_cdf": nml_cdf,
-        "max_val": nb_actors,
-        "start_val": seed_nb,
-    }
-
-
-def area_under_curve(cdf: np.ndarray, start_val: int, max_value: int) -> float:
-    if len(cdf) < 2:
-        raise ValueError("CDF must contain at least two values.")
-    area = np.trapezoid(cdf - start_val)
-    return area / ((max_value - start_val) * len(cdf))
+from src.aux import auc, slicer_plotter
 
 
 def load_data() -> slicer_plotter.ResultsSlicer:
@@ -90,9 +52,9 @@ def produce_quantitative_results(
             mds_gain = mds_slice["gain"].mean()
             nml_gain = nml_slice["gain"].mean()
 
-            cdf_dict = prepare_cdfs(mds_slice=mds_slice, nml_slice=nml_slice)
+            cdf_dict = auc.prepare_cdfs(mds_slice=mds_slice, nml_slice=nml_slice)
             try:
-                mds_auc = area_under_curve(
+                mds_auc = auc.area_under_curve(
                     cdf=cdf_dict["mds_cdf"],
                     start_val=cdf_dict["start_val"],
                     max_value=cdf_dict["max_val"],
@@ -100,7 +62,7 @@ def produce_quantitative_results(
             except ValueError:
                 mds_auc = 0.
             try:
-                nml_auc = area_under_curve(
+                nml_auc = auc.area_under_curve(
                     cdf=cdf_dict["nml_cdf"],
                     start_val=cdf_dict["start_val"],
                     max_value=cdf_dict["max_val"],
