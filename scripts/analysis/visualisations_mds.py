@@ -21,26 +21,27 @@ if __name__ == "__main__":
     print(out_dir)
 
     # visualise artificial networks
-    for idx in range(10):
-        print(f"{idx + 1}/{10}")
+    n_networks = 5
+    for idx in range(n_networks):
+        print(f"{idx + 1}/{n_networks}")
         # Erdos-Renyi model
-        net = generate(model="ER", nb_actors=50, nb_layers=3)
+        net = generate(model="ER", nb_actors=35, nb_layers=2)
         mds = mds_func(net)
         mds_plotter = MDSVisualiser(net, mds, f"ER_{idx + 1}", out_dir)
-        mds_plotter.plot_centralities()
-        mds_plotter.plot_structure()
+        mds_plotter.manuscript_plot()
         # Preferential-Attachment model
-        net = generate(model="PA", nb_actors=100, nb_layers=3)
+        net = generate(model="PA", nb_actors=35, nb_layers=2)
         mds = mds_func(net)
         mds_plotter = MDSVisualiser(net, mds, f"PA_{idx + 1}", out_dir)
-        mds_plotter.plot_centralities()
-        mds_plotter.plot_structure()
+        mds_plotter.manuscript_plot()
 
-    # visualise real networks
-    for net_name in ResultsPlotter._networks:
-        print(net_name)
-        net = load_network(net_name, as_tensor=False)
-        mds = mds_func(net)
-        mds_plotter = MDSVisualiser(net, mds, net_name, out_dir)
-        mds_plotter.plot_centralities()
-        mds_plotter.plot_structure()
+    # # visualise real networks
+    # for net_name in ResultsPlotter._networks:
+    #     if net_name == "timik1q2009":
+    #         continue
+    #     print(net_name)
+    #     net = load_network(net_name, as_tensor=False)
+    #     mds = mds_func(net)
+    #     mds_plotter = MDSVisualiser(net, mds, net_name, out_dir)
+    #     mds_plotter.plot_centralities()
+    #     mds_plotter.plot_structure()
