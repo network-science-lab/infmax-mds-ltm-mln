@@ -212,17 +212,17 @@ class ResultsPlotter:
         ):
             yield or_case
     
-    def yield_heatmap_config(self) -> Generator[tuple[str, str, str], None, None]:
+    def yield_heatmap_config(self) -> Generator[tuple[str, str, tuple[str, str]], None, None]:
         for and_case in product(
             self._ss_methods,
             [self._protocol_and],
-            list(set(self._networks_groups.keys())),
+            list(self._networks_groups.items()),
         ):
             yield and_case
         for or_case in product(
             self._ss_methods,
             [self._protocol_or],
-            list(set(self._networks_groups.keys())),
+            list(self._networks_groups.items()),
         ):
             yield or_case
     
@@ -249,7 +249,6 @@ class ResultsPlotter:
         x = np.arange(len(y_avg))
         ax.plot(x, y_avg, label=label, color=colour)
         ax.fill_between(x, y_avg - y_std, y_avg + y_std, color=colour, alpha=0.4)
-    
 
     def plot_single_comparison_dynamics(
         self,
