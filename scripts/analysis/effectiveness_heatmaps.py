@@ -141,11 +141,11 @@ def prepare_heatmap(
         on=["protocol", "mi_value", "seed_budget", "network", "ss_method"],
         how="left",
         suffixes=["_templ", ""],
-    )[["mi_value", "seed_budget", metric]]
+    )[["mi_value", "seed_budget", metric]].rename(columns={"mi_value": "μ", "seed_budget": "s"})
     heatmap_df = pd.pivot_table(
         full_combinations,
-        index="mi_value",
-        columns="seed_budget",
+        index="μ",
+        columns="s",
         values=metric,
         dropna=False,
     )
@@ -264,7 +264,7 @@ def plot_heatmaps_aggregated(quantitative_comparison_path: Path, out_dir: Path) 
             exp_heatmap["feasible_mds_wins_prct"],
             ax=ax[0],
             annot=exp_heatmap["feasible_nodiff_toosmall_counts"],
-            annot_kws={"size": 8, "va":"top"},
+            annot_kws={"size": 9, "va": "top", "color": "black"},
             fmt="",
             cbar=False,
         )
@@ -272,7 +272,7 @@ def plot_heatmaps_aggregated(quantitative_comparison_path: Path, out_dir: Path) 
             exp_heatmap["feasible_mds_wins_prct"],
             ax=ax[0],
             annot=exp_heatmap["avg_metric_diff"],
-            annot_kws={"size": 9, "va":"bottom"},
+            annot_kws={"size": 10, "va": "bottom", "color": "black"},
             fmt=".2f",
             cbar=False,
         )
@@ -283,6 +283,8 @@ def plot_heatmaps_aggregated(quantitative_comparison_path: Path, out_dir: Path) 
             annot=False,
             vmin=0,
             vmax=100,
+            linecolor="black",
+            linewidths=.5,
             cmap=quantise_cmap("RdYlGn", 10, 0, 100),
             cbar_kws={"shrink": .8},
         )
@@ -291,7 +293,8 @@ def plot_heatmaps_aggregated(quantitative_comparison_path: Path, out_dir: Path) 
             f"δ: {exp_params[1]}, " + 
             f"metric: {'Γ' if exp_params[2] == 'gain' else 'Λ'}"
         )
-        fig.tight_layout()
+        # fig.tight_layout()
+        fig.tight_layout(pad=0, rect=(-.05, 0, 1, .99))
         fig.savefig(pdf, format="pdf")
         plt.close(fig)
     pdf.close()
