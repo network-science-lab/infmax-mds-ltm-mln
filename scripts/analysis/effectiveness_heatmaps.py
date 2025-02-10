@@ -3,6 +3,7 @@
 import itertools
 from pathlib import Path
 from typing import Optional, Union
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,8 +22,11 @@ def prepare_ticklabels(series: pd.Index) -> Union[np.ndarray, str]:
         return "auto"
 
 
-def quantise_cmap(cmap: str, n_levels: int, v_min: int, v_max: int) -> ListedColormap:
+def quantise_cmap(cmap: str, n_levels: int) -> ListedColormap:
     custom_cmap = ListedColormap(sns.color_palette(cmap, n_colors=n_levels))
+    custom_cmap.set_bad(color="gray")
+    # custom_cmap.set_over(color="gray")
+    custom_cmap.set_under(color="gray")
     return custom_cmap
 
 
@@ -38,7 +42,7 @@ def plot_heatmap(
 
     # quantised color map
     n_levels = 5
-    custom_cmap = quantise_cmap(cmap, n_levels, vrange[0], vrange[1])
+    custom_cmap = quantise_cmap(cmap, n_levels)
     boundaries = np.linspace(vrange[0], vrange[1], n_levels)
     norm = BoundaryNorm(boundaries, ncolors=n_levels+1, extend="both")
 
@@ -203,23 +207,28 @@ def stack_heatmaps(chunk: list[pd.DataFrame]) -> dict[str, pd.DataFrame]:
     no_diffusion_counts = np.sum(chunk_arr == -np.inf, axis=0)
     all_counts = (np.ones_like(no_diffusion_counts) * chunk_arr.shape[0])
     feasible_counts = all_counts - (no_diffusion_counts + too_small_mds_counts)
+    feasible_significant_counts = np.sum(
+        ((chunk_arr > 0.01) & (chunk_arr <= 1)) | ((chunk_arr < -0.01) & (chunk_arr >= -1)),
+        axis=0
+    )
+    feasible_nonsignificant_counts = feasible_counts - feasible_significant_counts
+    aux_arr = (
+        "(" + feasible_significant_counts.astype(str) + "/" + 
+        feasible_nonsignificant_counts.astype(str) + ")/\n" +
+        no_diffusion_counts.astype(str) + "/" +
+        too_small_mds_counts.astype(str)
+    )
 
     _chunk_arr = chunk_arr.copy()
     _chunk_arr[_chunk_arr == -np.inf] = np.nan
     avg_metric_diff = np.nanmean(_chunk_arr, axis=0)
 
-    feasible_mds_wins_prct= 100 * np.sum(chunk_arr > 0.01, axis=0) / feasible_counts
-
-    aux_arr = (
-        feasible_counts.astype(str) + "/" +
-        no_diffusion_counts.astype(str) + "/" +
-        too_small_mds_counts.astype(str)
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        feasible_mds_wins_prct = (100 * np.sum(chunk_arr > 0.01, axis=0)) / feasible_significant_counts
+    feasible_mds_wins_prct[np.isnan(feasible_mds_wins_prct)] = -20
 
     return {
-        # "too_small_mds_counts": pd.DataFrame(too_small_mds_counts, columns=ref_columns, index=ref_index),
-        # "no_diffusion_counts": pd.DataFrame(no_diffusion_counts, columns=ref_columns, index=ref_index),
-        # "feasible_counts": pd.DataFrame(feasible_counts, columns=ref_columns, index=ref_index),
         "feasible_nodiff_toosmall_counts": pd.DataFrame(aux_arr, columns=ref_columns, index=ref_index),
         "avg_metric_diff": pd.DataFrame(avg_metric_diff, columns=ref_columns, index=ref_index),
         "feasible_mds_wins_prct": pd.DataFrame(feasible_mds_wins_prct, columns=ref_columns, index=ref_index),
@@ -264,7 +273,7 @@ def plot_heatmaps_aggregated(quantitative_comparison_path: Path, out_dir: Path) 
             exp_heatmap["feasible_mds_wins_prct"],
             ax=ax[0],
             annot=exp_heatmap["feasible_nodiff_toosmall_counts"],
-            annot_kws={"size": 9, "va": "top", "color": "black"},
+            annot_kws={"size": 8, "va": "top", "color": "black"},
             fmt="",
             cbar=False,
         )
@@ -285,15 +294,15 @@ def plot_heatmaps_aggregated(quantitative_comparison_path: Path, out_dir: Path) 
             vmax=100,
             linecolor="black",
             linewidths=.5,
-            cmap=quantise_cmap("RdYlGn", 10, 0, 100),
+            cmap=quantise_cmap("RdYlGn", 11),
             cbar_kws={"shrink": .8},
+            norm=BoundaryNorm(np.arange(0, 101, 10), ncolors=11, extend="min"),
         )
         fig.suptitle(
             f"networks: {exp_params[0].upper()}, " + 
             f"δ: {exp_params[1]}, " + 
             f"metric: {'Γ' if exp_params[2] == 'gain' else 'Λ'}"
         )
-        # fig.tight_layout()
         fig.tight_layout(pad=0, rect=(-.05, 0, 1, .99))
         fig.savefig(pdf, format="pdf")
         plt.close(fig)
