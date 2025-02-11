@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from src.aux import slicer_plotter
+from src.loaders.net_loader import load_network
+
 
 def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
     print("plotting statistics about MDS used")
@@ -28,7 +30,7 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
     used_mds_df
 
     iterator_mds = product(
-        used_mds_df["ss_method"].unique(),
+        # used_mds_df["ss_method"].unique(),
         used_mds_df["network"].unique(),
     )
     iterator_mds = list(iterator_mds)
@@ -36,15 +38,15 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
     mds_similarity_list = []
     for idx, simulated_case in enumerate(tqdm(iterator_mds)):
         case_mds = used_mds_df.loc[
-            (used_mds_df["ss_method"] == simulated_case[0]) &
-            (used_mds_df["network"] == simulated_case[1])
+            # (used_mds_df["ss_method"] == simulated_case[0]) &
+            (used_mds_df["network"] == simulated_case[0])
         ]["mds"]
         mds_lengths = [len(cm) for cm in case_mds]
         mds_similarity = slicer_plotter.analyse_set_similarity(case_mds)
         mds_similarity_list.append(
             {
-                "network": simulated_case[1],
-                "ss_method": simulated_case[0],
+                "network": simulated_case[0],
+                # "ss_method": simulated_case[0],
                 "max_mds_length": np.max(mds_lengths),
                 "min_mds_length": np.min(mds_lengths),            
                 "avg_mds_length": np.mean(mds_lengths),
@@ -55,6 +57,58 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     mds_similarity_df = pd.DataFrame(mds_similarity_list)
     return mds_similarity_df, used_mds_df
+
+
+def similarities_mds_to_latex(csv_path: Path) -> None:
+    print("Creating manuscript-ready table.")
+
+    # read the data and add network size
+    actors_nbs = {}
+    ms_df = pd.read_csv(csv_path, index_col=0)
+    for net_name in ms_df["network"]:
+        net_graph = load_network(net_name, as_tensor=False)
+        actors_nbs[net_name] = net_graph.get_actors_num()
+    ms_df = ms_df.set_index("network")
+    ms_df.loc[:, "net_size"] = actors_nbs
+
+    # create a colum for the normalised MDS-size range
+    ms_df["max_mds_length"] /= ms_df["net_size"]
+    ms_df["min_mds_length"] /= ms_df["net_size"]
+    ms_df["size_range"] = (
+        "$[" +
+        ms_df["min_mds_length"].apply(lambda x: f"{x:.2f}") + 
+        ", " +
+        ms_df["max_mds_length"].apply(lambda x: f"{x:.2f}") +
+        "]$"
+    )
+
+    # create a colum for the normalised MDS-average range
+    ms_df["avg_mds_length"] /= ms_df["net_size"]
+    ms_df["std_mds_length"] /= ms_df["net_size"]
+    ms_df["avg_size"] = (
+        "$" +
+        ms_df["avg_mds_length"].apply(lambda x: f"{x:.2f}") +  
+        " (" +
+        # ms_df["std_mds_length"].round(4).astype(str) +
+        ms_df["std_mds_length"].apply(lambda x: f"{x:.0E}") +
+        ")$"
+    )
+
+    # convert other columns to math symbols
+    ms_df["entropy"] = "$" + ms_df["entropy"].apply(lambda x: f"{x:.2f}") + "$"
+    ms_df["jaccard_similarity"] = "$" + ms_df["jaccard_similarity"].apply(lambda x: f"{x:.2f}") + "$"
+    ms_df["unique_sets_ratio"] = "$" + ms_df["unique_sets_ratio"] + "$"
+
+    # save to latex
+    ms_df[
+        [
+            "size_range",
+            "avg_size",
+            "unique_sets_ratio",
+            "jaccard_similarity",
+            "entropy",
+        ]
+    ].reset_index().to_latex("table.txt")
 
 
 if __name__ == "__main__":
@@ -68,3 +122,6 @@ if __name__ == "__main__":
     mds_similarity_df, used_mds_df = generate_similarities_mds()
     mds_similarity_df.to_csv(workdir.joinpath("similarities_mds.csv"))
     used_mds_df.to_csv(workdir.joinpath("used_mds.csv"))
+
+    # prepare a publication-ready table
+    similarities_mds_to_latex(workdir.joinpath("similarities_mds.csv"))
