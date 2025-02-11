@@ -1,8 +1,9 @@
 **/__pycache__
 **/.DS_Store
-*.json
 *.egg-info
 .idea
+*.json
+*.txt
 .vscode
 data/experiment_setup
 doodles
