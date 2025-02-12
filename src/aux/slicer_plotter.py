@@ -19,15 +19,17 @@ from src.aux import NML_ACTORS_COLOUR, MDS_ACTORS_COLOUR, OTHER_ACTORS_COLOUR
 
 class ResultsSlicer:
 
-    def __init__(self, raw_results_path: str) -> None:
-        self.raw_df = self.read_raw_df(raw_results_path)
+    def __init__(self, raw_results_path: str, with_repetition: bool = False) -> None:
+        self.raw_df = self.read_raw_df(raw_results_path, with_repetition)
 
     @staticmethod
-    def read_raw_df(raw_result_paths: list[str]) -> pd.DataFrame:
+    def read_raw_df(raw_result_paths: list[str], with_repetition: bool) -> pd.DataFrame:
         dfs = []
         print(set(Path(csv_path).parent.name for csv_path in raw_result_paths))
         for csv_path in raw_result_paths:
             csv_df = pd.read_csv(csv_path)
+            if with_repetition:
+                csv_df["repetition"] = Path(csv_path).stem.split("_")[-1]
             dfs.append(csv_df)
         return pd.concat(dfs, axis=0, ignore_index=True)
 

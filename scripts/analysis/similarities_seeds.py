@@ -55,18 +55,25 @@ def get_seed_sets(
     raw_df: pd.DataFrame,
     network: str,
     seed_budget: int,
-    ss_method: str
+    ss_method: str,
+    protocol: str,
+    repetition: str,
 ) -> list[set[str]]:
     seed_sets = raw_df.loc[
         (raw_df["network"] == network) &
         (raw_df["seed_budget"] == seed_budget) &
-        (raw_df["ss_method"] == ss_method)
+        (raw_df["ss_method"] == ss_method) &
+        (raw_df["protocol"] == protocol) &
+        (raw_df["repetition"] == repetition) &
+        (raw_df["mi_value"] == 0.1)  # it doesn't matter for the results but speeds up computations
     ]["seed_ids"].to_list()
-    return [set(seed_set.split(";")) for seed_set in seed_sets]
+    return [set(seed_set.split(";")) for seed_set in seed_sets]  # a workaround if seed set is empty
 
 
 def raw_df_to_table(raw_df: pd.DataFrame, net_type: str, metric: str) -> pd.DataFrame:
-    filtered_df = raw_df.loc[raw_df["type"] == net_type].drop(["type", "network"], axis=1)
+    filtered_df = raw_df.loc[raw_df["type"] == net_type].drop(
+        ["type", "network", "protocol", "repetition"], axis=1
+    )
     avg_df = filtered_df.groupby(["seed_budget", "ss_method"]).mean().reset_index()
     avg_pivot_df = pd.pivot_table(avg_df, index="seed_budget", columns="ss_method", values=metric)
     avg_pivot_df = avg_pivot_df.map(lambda x: f"{x:.2f}")
@@ -76,12 +83,14 @@ def raw_df_to_table(raw_df: pd.DataFrame, net_type: str, metric: str) -> pd.Data
     return "$" + avg_pivot_df + " (" + std_pivot_df + ")$"
 
 
-def similarities_seeds(results: ResultsSlicer) -> pd.DataFrame:
-    print("plotting statistics about seed sets to the manuscript")
+def similarities_seeds(results: ResultsSlicer, net_type: str) -> pd.DataFrame:
+    print(f"plotting statistics about seed sets to the manuscript: {net_type}")
     iterator = product(
         ResultsPlotter._networks,
         set(ResultsPlotter._seed_budgets_and).union(set(ResultsPlotter._seed_budgets_or)),
-        ResultsPlotter._ss_methods
+        ResultsPlotter._ss_methods,
+        [ResultsPlotter._protocol_or, ResultsPlotter._protocol_and],
+        sorted(results.raw_df["repetition"].unique().tolist()),
     )
     iterator = list(iterator)
     similarity_list = []
@@ -89,39 +98,50 @@ def similarities_seeds(results: ResultsSlicer) -> pd.DataFrame:
         network = simulated_case[0]
         seed_budget = simulated_case[1]
         ss_method = simulated_case[2]
+        protocol = simulated_case[3]
+        repetition = simulated_case[4]
+        if ResultsPlotter._networks_groups[network] != net_type:
+            continue
+
+        mds_seed_sets = get_seed_sets(
+            raw_df=results.raw_df,
+            network=network,
+            seed_budget=seed_budget,
+            ss_method=f"D^{ss_method}",
+            protocol = protocol,
+            repetition=repetition,
+        )
+        if len(mds_seed_sets) == 0:
+            continue
 
         nml_seed_sets = get_seed_sets(
             raw_df=results.raw_df,
             network=network,
             seed_budget=seed_budget,
             ss_method=ss_method,
+            protocol = protocol,
+            repetition=repetition,
         )
-        nml_union_set = squash_sets(nml_seed_sets)
-        mds_seed_sets = get_seed_sets(
-            raw_df=results.raw_df,
-            network=network,
-            seed_budget=seed_budget,
-            ss_method=f"D^{ss_method}",
-        )
-        mds_union_set = squash_sets(mds_seed_sets)
-        iou = len(nml_union_set.intersection(mds_union_set)) / len(nml_union_set.union(mds_union_set))
+
+        intersection = nml_seed_sets[0].intersection(mds_seed_sets[0])
+        union =  nml_seed_sets[0].union(mds_seed_sets[0])
+
         similarity_list.append(
             {
                 "network": network,
                 "type": ResultsPlotter._networks_groups[network],
                 "seed_budget": seed_budget,
                 "ss_method": ss_method,
-                "jaccard": iou,
-                # "lengths": len(mds_union_set) / len(nml_union_set),
+                "protocol": protocol,
+                "repetition": repetition,
+                "jaccard": len(intersection) / len(union),
             }
         )
+
     similarity_df = pd.DataFrame(similarity_list)
 
-    for net_type in set(ResultsPlotter._networks_groups.values()):
-        for metric in ["jaccard"]: # , "lengths"]:
-            print(net_type, metric)
-            table = raw_df_to_table(similarity_df, net_type, metric)
-            table.to_latex(f"{net_type}_{metric}.txt")
+    table = raw_df_to_table(similarity_df, net_type, "jaccard")
+    table.to_latex(f"{net_type}_jaccard.txt")
 
 
 if __name__ == "__main__":
@@ -136,7 +156,8 @@ if __name__ == "__main__":
         [
             csv_file for csv_file in glob.glob(fr"{str(root_dir)}/data/raw_results/**", recursive=True)
             if re.search(r"batch_([1-9][0-2]?)/.*\.csv$", csv_file)
-        ]
+        ],
+        with_repetition=True,
     )
 
     # compute the DFs
@@ -146,4 +167,6 @@ if __name__ == "__main__":
     seeds_similarity_or_df.to_csv(workdir.joinpath("similarities_seeds_or.csv"))
 
     # this goes to publication
-    similarities_seeds(results)
+    similarities_seeds(results, "real")
+    similarities_seeds(results, "er")
+    similarities_seeds(results, "sf")
