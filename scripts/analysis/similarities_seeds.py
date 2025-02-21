@@ -79,7 +79,7 @@ def raw_df_to_table(raw_df: pd.DataFrame, net_type: str, metric: str) -> pd.Data
     avg_pivot_df = avg_pivot_df.map(lambda x: f"{x:.2f}")
     std_df = filtered_df.groupby(["seed_budget", "ss_method"]).std().reset_index()
     std_pivot_df = pd.pivot_table(std_df, index="seed_budget", columns="ss_method", values=metric)
-    std_pivot_df = std_pivot_df.map(lambda x: f"{x:.0E}")
+    std_pivot_df = std_pivot_df.map(lambda x: f"{x:.2f}")
     return "$" + avg_pivot_df + " (" + std_pivot_df + ")$"
 
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     # compute the DFs
     seeds_similarity_and_df = generate_similarities_seeds(results, "AND")
-    seeds_similarity_and_df.to_csv(workdir.joinpath("similarities_seeds_and.csv"))
+    seeds_similarity_and_df.to_csv(workdir.jsoinpath("similarities_seeds_and.csv"))
     seeds_similarity_or_df = generate_similarities_seeds(results, "OR")
     seeds_similarity_or_df.to_csv(workdir.joinpath("similarities_seeds_or.csv"))
 

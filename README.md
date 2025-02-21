@@ -1,9 +1,8 @@
-# Inf. Max. with Minimal Dominating Set under LTM for Multilayer Networks
+# Appl. of the Minimal Dominating Set for Influence Max. in Multilayer Networks
 
-A repository to check efficiency of MDS-based seed selection methods in influence maximisation
-problem under Multilayer Linear Threshold Model.
+A repository with a source code for the paper: <>
 
-* Authors: Michał Czuba(¶†), Mingshan Jia(†), Kaska Gabrys-Musial(†), Piotr Bródka(¶†)
+* Authors: Michał Czuba(¶†), Mingshan Jia(†), Piotr Bródka(¶†), Katarzyna Musial(†)
 * Affiliation:  
         (¶) WUST, Wrocław, Lower Silesia, Poland  
         (†) UTS, Sydney, NSW, Australia
@@ -72,8 +71,8 @@ parameters, a csv file will be obtained with following columns:
     expositons_rec: str     # record of new activations in each epoch aggr. into string (sep. by ;)
     network: str            # network's name
     protocol: str           # protocols's name
-    seed_budget: float      # a value of the maximal seed budget
-    mi_value: float         # a value of the threshold
+    seed_budget: float      # value of the maximal seed budget
+    mi_value: float         # value of the threshold
     ss_method: str          # seed selection method's name
 }
 ```
