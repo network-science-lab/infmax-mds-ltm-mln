@@ -1,6 +1,6 @@
 outs:
-- md5: 47852ec80c18845448ce8a4cb29d6b6a.dir
-  size: 90913377
-  nfiles: 64
+- md5: 81e24e9762d5cdda6138393c94935f80.dir
+  size: 2285118
+  nfiles: 16
   hash: md5
   path: visualisations_mds

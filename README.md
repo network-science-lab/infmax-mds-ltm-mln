@@ -1,9 +1,8 @@
-# Inf. Max. with Minimal Dominating Set under LTM for Multilayer Networks
+# Appl. of the Minimal Dominating Set for Influence Max. in Multilayer Networks
 
-A repository to check efficiency of MDS-based seed selection methods in influence maximisation
-problem under Multilayer Linear Threshold Model.
+A repository with a source code for the paper: https://arxiv.org/abs/2502.15236
 
-* Authors: Michał Czuba(¶†), Mingshan Jia(†), Kaska Gabrys-Musial(†), Piotr Bródka(¶†)
+* Authors: Michał Czuba(¶†), Mingshan Jia(†), Piotr Bródka(¶†), Katarzyna Musial(†)
 * Affiliation:  
         (¶) WUST, Wrocław, Lower Silesia, Poland  
         (†) UTS, Sydney, NSW, Australia
@@ -18,37 +17,35 @@ conda activate infmax-mds-ltm-mln
 python -m ipykernel install --user --name=infmax-mds-ltm-mln
 ```
 
+To use scripts which produce analysis, install the source code:
+
+```bash
+pip install -e .
+```
+
 ## Data
 
-Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Google Drive. Please
-send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, simply execute in
-the shell: `dvc pull`. **The dataset is large, hence we recommend to pull `zip` files only if
-necessary.** For normal usage it is engouh to pull networks (`dvc pull data/networks`) and raw
-results which are subjects of the analysis (that can be done in two ways - either pull all results
-and kill the disk: `dvc pull data/raw_results` or just pre-preprocessed data with configs:
-`sh data/get_raw_results_slim.sh`).
-
-To extract raw results and pack it into separate `zip` file run: `sh data/zip_raw_results_slim.sh`
+Dataset is stored with DVC. Thus, to obtain it you have to access a Google Drive. Please
+send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, execute in shell:
+`dvc pull`. **`zip` files are large and we recommend to pull them only if necessary.**
 
 ## Structure of the repository
-```
+
+```bash
 .
 ├── README.md
-├── analysis                -> code to be merged into `src`
 ├── data
-│   ├── experiment_setup    -> template configuration files with actulally used experimental setup
 │   ├── networks            -> networks used in exmeriments
 │   ├── processed_results
 │   ├── raw_results
 │   └── test                -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
+├── scripts
+│   ├── analysis
+│   └── configs             -> exemplary configuration files
 ├── src                     -> scripts to execute experiments and process the results
-├── example_config.yaml     -> an example of the config accepted by the simulator
 ├── run_experiments.py      -> an entrypoint to trigger the pipeline to evaluate MDS in InfMax
 ├── test_reproducibility.py -> E2E test to prove that results can be repeated
-├── produce_comparison.py   -> produce CSV with comparison between (non)MDS w.r.t. dynamics and gain
-├── visualise_mds.py        -> produce structural and cantrality-based visualisations of MDS
-└── visualise_results.ipynb -> a notebook to produce results analysis
 ```
 
 ## Running the pipeline
@@ -68,8 +65,8 @@ parameters, a csv file will be obtained with following columns:
     expositons_rec: str     # record of new activations in each epoch aggr. into string (sep. by ;)
     network: str            # network's name
     protocol: str           # protocols's name
-    seed_budget: float      # a value of the maximal seed budget
-    mi_value: float         # a value of the threshold
+    seed_budget: float      # value of the maximal seed budget
+    mi_value: float         # value of the threshold
     ss_method: str          # seed selection method's name
 }
 ```
@@ -86,7 +83,18 @@ Results are supposed to be fully reproducable. There is a test for that: `test_r
 
 ## Obtaining analysis of results
 
-To process raw results please execute the notebook or one of the python scripts in the root of the
-repository listed above. Note, that it can take while for jupyter to get all outcomes. Threfore,
-in order to obtain complete visualisations we recommend to execute the notebook in non-interactive
-mode: `jupyter nbconvert visualise_results.ipynb --to python --execute`
+To process raw results please execute scripts in `scripts/analysis` directory in the order as 
+depicted in a following tree. Please note, that names of scripts reflect names of genreated files
+under `data/processed_results`:
+
+```bash
+.
+├── distr_expos.ipynb
+├── quantitative_comparison.py
+│   ├── effectiveness_heatmaps.py
+│   └── profile_reports.py
+├── metrics.py
+├── similarities_mds.py
+├── similarities_seeds.py
+└── visualisations_mds.py
+```

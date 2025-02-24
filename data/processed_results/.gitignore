@@ -1,4 +1,8 @@
 *.csv
 /expositions.pdf
 /distributions.pdf
+/profile_reports
 /visualisations_mds
+/heatmaps.pdf
+/metrics.pdf
+/heatmaps_aggregated.pdf

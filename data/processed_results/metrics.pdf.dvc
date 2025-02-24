@@ -1,0 +1,5 @@
+outs:
+- md5: a530967d9abd6c446399cdd90e012c35
+  size: 15645
+  hash: md5
+  path: metrics.pdf

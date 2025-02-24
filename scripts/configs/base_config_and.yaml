@@ -1,0 +1,50 @@
+model:
+  protocols: ["AND"]
+  mi_values: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+  seed_budgets: [15, 20, 25, 30, 35]
+  ss_methods: [
+    "deg_c",
+    "d^deg_c",
+    "deg_cd",
+    "d^deg_cd",
+    "nghb_1s",
+    "d^nghb_1s",
+    "nghb_sd",
+    "d^nghb_sd",
+    "random",
+    "d^random",
+  ]
+
+networks: [
+  # ##### ##### ##### batch uneven
+  "aucs",
+  "ckm_physicians",
+  "lazega",
+  "l2_course_net_1",
+  # ##### ##### ##### batch uneven
+  "er1",
+  "er2",
+  "er3",
+  "er5",
+  "sf1",
+  "sf2",
+  "sf3",
+  "sf5",
+  # ##### ##### ##### batch uneven
+  "timik1q2009",
+]
+
+ranking_path: null
+
+run:
+  max_epochs_num: -1
+  patience: 1
+  repetitions: 30
+  random_seed: 43
+
+logging:
+  full_output_frequency: -1
+  compress_to_zip: True
+  out_dir: "./data/raw_results/batch_X"  # <- select proper path according to the bach name
+
+
