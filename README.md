@@ -1,6 +1,6 @@
 # Appl. of the Minimal Dominating Set for Influence Max. in Multilayer Networks
 
-A repository with a source code for the paper: <>
+A repository with a source code for the paper: https://arxiv.org/abs/2502.15236
 
 * Authors: Michał Czuba(¶†), Mingshan Jia(†), Piotr Bródka(¶†), Katarzyna Musial(†)
 * Affiliation:  
@@ -25,15 +25,9 @@ pip install -e .
 
 ## Data
 
-Dataset is stored on a DVC remote. Thus, to obtain it you have to access a Google Drive. Please
-send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, simply execute in
-the shell: `dvc pull`. **The dataset is large, hence we recommend to pull `zip` files only if
-necessary.** For normal usage it is engouh to pull networks (`dvc pull data/networks`) and raw
-results which are subjects of the analysis (that can be done in two ways - either pull all results
-and kill the disk: `dvc pull data/raw_results` or just pre-preprocessed data with configs:
-`sh data/get_raw_results_slim.sh`).
-
-To extract raw results and pack it into separate `zip` file run: `sh data/zip_raw_results_slim.sh`
+Dataset is stored with DVC. Thus, to obtain it you have to access a Google Drive. Please
+send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, execute in shell:
+`dvc pull`. **`zip` files are large and we recommend to pull them only if necessary.**
 
 ## Structure of the repository
 
