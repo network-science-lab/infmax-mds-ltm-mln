@@ -63,7 +63,7 @@ def find_real_mds(
     actors = net_graph.get_actors()
     possible_ds_nb = get_possible_ds_nb(len(actors), min_eval_size, max_eval_size)
     out_file = OutFile(out_dir / f"{net_name}.csv")
-    p_bar = tqdm(desc="Searching possible sets", total=possible_ds_nb)
+    p_bar = tqdm(desc=f"Searching possible sets {net_name}", total=possible_ds_nb)
     for n in range(min_eval_size, max_eval_size + 1):
         for cantidate_ds in itertools.combinations(actors, n):
             p_bar.update(1)
