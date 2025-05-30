@@ -20,6 +20,8 @@ networks: [
   "toy_network",
 ]
 
+es_size_range: [0, 30]
+
 run:
   experiment_type: "brute_ds"
   max_epochs_num: -1  # this is a wildcard for unlimited allowed epochs in LTM spread instance
