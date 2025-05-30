@@ -1,11 +1,11 @@
 """A script to find the real MDS using brute-force method"""
 
+import concurrent.futures
 import itertools
 import uuid
+import warnings
 from pathlib import Path
 from typing import Any
-
-import warnings
 
 import network_diffusion as nd
 import numpy as np
@@ -68,14 +68,24 @@ def find_real_mds(
                     out_file.save_ds(cds_ids)
 
 
+def _process_net(net: params_handler.Network, out_dir: Path) -> None:
+    print(f"Processing {net.name} network")
+    find_real_mds(
+        net_graph=net.graph,
+        net_name=net.name,
+        max_eval_size=net.graph.get_actors_num(),
+        out_dir=out_dir,
+    )
+    print(f"Computations completed for: {net.name}")
+
+
 def run_experiments(config: dict[str, Any]) -> None:
     nets = params_handler.load_networks(config["networks"])
     out_dir = params_handler.create_out_dir(config["logging"]["out_dir"])
-    for net in nets:
-        print(f"Processing {net.name} network")
-        find_real_mds(
-            net_graph=net.graph,
-            net_name=net.name,
-            max_eval_size=net.graph.get_actors_num(),
-            out_dir=out_dir,
-        )
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        futures = [executor.submit(_process_net, net, out_dir) for net in nets]
+        for f in concurrent.futures.as_completed(futures):
+            try:
+                f.result()
+            except Exception as e:
+                print(f"An error occurred: {e}")
