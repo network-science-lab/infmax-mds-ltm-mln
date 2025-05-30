@@ -3,6 +3,7 @@
 import itertools
 import uuid
 from pathlib import Path
+from typing import Any
 
 import warnings
 
@@ -79,6 +80,11 @@ def main():
             max_eval_size=net.graph.get_actors_num(),
             out_dir=Path(__file__).parent.parent,
         )
+
+
+def run_experiments(config: dict[str, Any]) -> None:
+    print("hei-di hei-do hei-da!")
+
 
 
 if __name__ == "__main__":
