@@ -1,6 +1,6 @@
 networks: [
   # "arxiv_netscience_coauthorship",
-  "aucs",
+  # "aucs",
   # "ckm_physicians",
   # "eu_transportation",
   # "eu_transport_klm",

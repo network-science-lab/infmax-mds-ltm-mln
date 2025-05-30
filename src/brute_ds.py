@@ -12,10 +12,8 @@ import numpy as np
 import scipy.special as sp
 from tqdm import tqdm
 
+from src import params_handler
 from src.models.mds.utils import is_dominating_set
-from src.params_handler import load_networks
-
-NETS = ["toy_network"] # , "aucs"]
 
 
 class OutFile:
@@ -70,23 +68,14 @@ def find_real_mds(
                     out_file.save_ds(cds_ids)
 
 
-def main():
-    nets = load_networks(NETS)
+def run_experiments(config: dict[str, Any]) -> None:
+    nets = params_handler.load_networks(config["networks"])
+    out_dir = params_handler.create_out_dir(config["logging"]["out_dir"])
     for net in nets:
         print(f"Processing {net.name} network")
         find_real_mds(
             net_graph=net.graph,
             net_name=net.name,
             max_eval_size=net.graph.get_actors_num(),
-            out_dir=Path(__file__).parent.parent,
+            out_dir=out_dir,
         )
-
-
-def run_experiments(config: dict[str, Any]) -> None:
-    print("hei-di hei-do hei-da!")
-
-
-
-if __name__ == "__main__":
-    print("DOOPA")
-    main()
