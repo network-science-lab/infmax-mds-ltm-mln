@@ -10,9 +10,10 @@ from typing import Any
 import network_diffusion as nd
 import numpy as np
 import scipy.special as sp
+import yaml
 from tqdm import tqdm
 
-from src import params_handler
+from src import params_handler, utils
 from src.models.mds.utils import is_dominating_set
 
 
@@ -90,6 +91,9 @@ def run_experiments(config: dict[str, Any]) -> None:
     networks = params_handler.load_networks(config["networks"])
     out_dir = params_handler.create_out_dir(config["logging"]["out_dir"])
     min_es, max_es = config["es_size_range"]
+    config["git_sha"] = utils.get_recent_git_sha()
+    with open(out_dir / "config.yaml", "w", encoding="utf-8") as f:
+        yaml.dump(config, f)
     with concurrent.futures.ProcessPoolExecutor() as executor:
         futures = [executor.submit(_process_net, net, out_dir, min_es, max_es) for net in networks]
         for f in concurrent.futures.as_completed(futures):
