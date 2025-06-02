@@ -48,6 +48,21 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 ├── test_reproducibility.py -> E2E test to prove that results can be repeated
 ```
 
+### Series of the results
+
+- batch_1 real-world, g-mds, AND
+- batch_2 real-world, g-mds, OR
+- batch_3 artificial, g-mds, AND
+- batch_4 artificial, g-mds, OR
+- batch_5 timik1q2009, g-mds, AND
+- batch_6 timik1q2009, g-mds, OR
+- batch_7 real-world, li-mds, AND
+- batch_8 real-world, li-mds, OR
+- batch_9 artificial, li-mds, AND
+- batch_10 artificial, li-mds, OR
+- batch_11 timik1q2009, li-mds, AND
+- batch_12 timik1q2009, li-mds, OR
+
 ## Running the pipeline
 
 To run experiments execute: `python run_experiments.py <config file>`. See `example_config.yaml` for
