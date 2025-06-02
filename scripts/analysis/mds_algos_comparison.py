@@ -51,13 +51,13 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
     for batch_id in batches:
         print(batch_id)
         used_mds_list.extend(
-            *slicer_plotter.JSONParser().read_minimal_dominating_sets(
+            slicer_plotter.JSONParser().read_minimal_dominating_sets(
                 f"data/raw_results/{batch_id}/rankings.zip"
             )
         )
 
     used_mds_df = pd.DataFrame(used_mds_list)
-    used_mds_df
+    print(used_mds_df)
 
     # iterator_mds = product(
     #     # used_mds_df["ss_method"].unique(),
