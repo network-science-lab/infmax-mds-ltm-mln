@@ -110,8 +110,10 @@ class JSONParser:
 
     @staticmethod
     def parse_json_name(json_name):
-        """Parse simulation params and match only those which utilised MDS."""
-        pattern = r"^ss-(?P<ss_method>D\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
+        """
+        Parse simulation params and match only those which utilised MDS (i.e. begin with D^ od d^).
+        """
+        pattern = r"^ss-(?P<ss_method>(D|d)\^.+?)--net-(?P<network>.+?)--ver-(?P<version>\d+_\d+)\.json$"
         match = re.match(pattern, json_name)
         if match:
             return match.groupdict()

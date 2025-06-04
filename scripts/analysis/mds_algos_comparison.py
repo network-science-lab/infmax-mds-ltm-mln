@@ -1,38 +1,14 @@
-"""Statistical analysis of MDS rankings."""
+"""Statistical analysis of MDS rankings obtained with LI and Greedy algos."""
 
-from itertools import product
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from src.aux import slicer_plotter
 from src.loaders.net_loader import load_network
 
 
-def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
+def generate_similarities_mds(workdir: Path) -> None:
     print("plotting statistics on differences between MDS obtained with greedy and local iprov.")
-    # zip_1_path = "data/raw_results/batch_1/rankings.zip"
-    # zip_2_path = "data/raw_results/batch_2/rankings.zip"
-    # zip_3_path = "data/raw_results/batch_3/rankings.zip"
-    # zip_4_path = "data/raw_results/batch_4/rankings.zip"
-    # zip_5_path = "data/raw_results/batch_5/rankings.zip"
-    # zip_6_path = "data/raw_results/batch_6/rankings.zip"
-    # zip_7_path = "data/raw_results/batch_7/rankings.zip"
-    # zip_8_path = "data/raw_results/batch_8/rankings.zip"
-    # zip_9_path = "data/raw_results/batch_9/rankings.zip"
-    # zip_10_path = "data/raw_results/batch_10/rankings.zip"
-    # zip_11_path = "data/raw_results/batch_11/rankings.zip"
-    # zip_12_path = "data/raw_results/batch_12/rankings.zip"
-    # used_mds_list = [
-    #     *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_1_path),
-    #     *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_2_path),
-    #     *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_3_path),
-    #     *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_4_path),
-    #     *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_5_path),
-    #     *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_6_path),
-    # ]
-
     batches = [
         "batch_1",
         "batch_2",
@@ -55,38 +31,45 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
                 f"data/raw_results/{batch_id}/rankings.zip"
             )
         )
-
     used_mds_df = pd.DataFrame(used_mds_list)
-    print(used_mds_df)
 
-    # iterator_mds = product(
-    #     # used_mds_df["ss_method"].unique(),
-    #     used_mds_df["network"].unique(),
-    # )
-    # iterator_mds = list(iterator_mds)
+    # get types of MDS used for comparison and MDS lengths
+    used_mds_df["mds_algo"] = used_mds_df["ss_method"].apply(lambda x: x.split("^")[0])
+    used_mds_df["ss_method"] = used_mds_df["ss_method"].apply(lambda x: x.split("^")[-1])
+    used_mds_df["mds_len"] = used_mds_df["mds"].apply(lambda x: len(x))
 
-    # mds_similarity_list = []
-    # for idx, simulated_case in enumerate(tqdm(iterator_mds)):
-    #     case_mds = used_mds_df.loc[
-    #         # (used_mds_df["ss_method"] == simulated_case[0]) &
-    #         (used_mds_df["network"] == simulated_case[0])
-    #     ]["mds"]
-    #     mds_lengths = [len(cm) for cm in case_mds]
-    #     mds_similarity = slicer_plotter.analyse_set_similarity(case_mds)
-    #     mds_similarity_list.append(
-    #         {
-    #             "network": simulated_case[0],
-    #             # "ss_method": simulated_case[0],
-    #             "max_mds_length": np.max(mds_lengths),
-    #             "min_mds_length": np.min(mds_lengths),            
-    #             "avg_mds_length": np.mean(mds_lengths),
-    #             "std_mds_length": np.std(mds_lengths),
-    #             **mds_similarity,
-    #         }
-    #     )
+    # obtain avg and std of differences of MDSs obtained greadily and with LI across the same nets
+    # and repetitions
+    _df = used_mds_df.pivot_table(
+        index=['network', 'version'],
+        columns='mds_algo',
+        values='mds_len'
+    ).dropna(subset=['d', 'D'])
+    _df["diff"] = _df["d"] - _df["D"]
+    final_df = _df.groupby("network")["diff"].agg(avg_diff="mean", std_diff="std").reset_index()
 
-    # mds_similarity_df = pd.DataFrame(mds_similarity_list)
-    # return mds_similarity_df, used_mds_df
+    # normalise numbers by network sizes
+    actors_nbs = {}
+    for net_name in final_df["network"]:
+        net_graph = load_network(net_name, as_tensor=False)
+        actors_nbs[net_name] = net_graph.get_actors_num()
+    final_df = final_df.set_index("network")
+    final_df.loc[:, "net_size"] = actors_nbs
+    final_df["std_diff"] /= final_df["net_size"]
+    final_df["avg_diff"] /= final_df["net_size"]
+    final_df = final_df.drop("net_size", axis=1)
+    final_df.to_csv(workdir / "g_vs_li_mds.csv")
+
+    # prepare latex representation
+    final_df["avg_difference"] = (
+        "$" +
+        final_df["avg_diff"].apply(lambda x: f"{x:.2f}") +  
+        " (" +
+        final_df["std_diff"].apply(lambda x: f"{x:.0E}") +
+        ")$"
+    )
+    final_df["avg_difference"].to_latex("table.txt")
+
 
 
 if __name__ == "__main__":
@@ -97,6 +80,4 @@ if __name__ == "__main__":
     workdir.mkdir(exist_ok=True, parents=True)
 
     # compute the DFs
-    mds_similarity_df, used_mds_df = generate_similarities_mds()
-    # mds_similarity_df.to_csv(workdir.joinpath("_f_similarities_mds.csv"))
-    # used_mds_df.to_csv(workdir.joinpath("used_mds.csv"))
+    mds_similarity_df = generate_similarities_mds(workdir)

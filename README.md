@@ -111,5 +111,6 @@ under `data/processed_results`:
 ├── metrics.py
 ├── similarities_mds.py
 ├── similarities_seeds.py
-└── visualisations_mds.py
+├── visualisations_mds.py
+└── mds_algos_comparison.py
 ```
