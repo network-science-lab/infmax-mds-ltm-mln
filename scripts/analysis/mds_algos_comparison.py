@@ -45,19 +45,20 @@ def generate_similarities_mds(workdir: Path) -> None:
         columns='mds_algo',
         values='mds_len'
     ).dropna(subset=['d', 'D'])
-    _df["diff"] = _df["d"] - _df["D"]
+    # _df["diff"] = _df["d"] - _df["D"]
+    _df["diff"] = (_df["d"] - _df["D"]) / _df["d"]
     final_df = _df.groupby("network")["diff"].agg(avg_diff="mean", std_diff="std").reset_index()
 
     # normalise numbers by network sizes
-    actors_nbs = {}
-    for net_name in final_df["network"]:
-        net_graph = load_network(net_name, as_tensor=False)
-        actors_nbs[net_name] = net_graph.get_actors_num()
+    # actors_nbs = {}
+    # for net_name in final_df["network"]:
+    #     net_graph = load_network(net_name, as_tensor=False)
+    #     actors_nbs[net_name] = net_graph.get_actors_num()
     final_df = final_df.set_index("network")
-    final_df.loc[:, "net_size"] = actors_nbs
-    final_df["std_diff"] /= final_df["net_size"]
-    final_df["avg_diff"] /= final_df["net_size"]
-    final_df = final_df.drop("net_size", axis=1)
+    # final_df.loc[:, "net_size"] = actors_nbs
+    # final_df["std_diff"] /= final_df["net_size"]
+    # final_df["avg_diff"] /= final_df["net_size"]
+    # final_df = final_df.drop("net_size", axis=1)
     final_df.to_csv(workdir / "g_vs_li_mds.csv")
 
     # prepare latex representation
