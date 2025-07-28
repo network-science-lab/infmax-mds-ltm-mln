@@ -63,6 +63,10 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 - batch_10 artificial, li-mds, OR
 - batch_11 timik1q2009, li-mds, AND
 - batch_12 timik1q2009, li-mds, OR
+- batch_13 arxiv_netscience_coauthorship, g-mds, AND
+- batch_14 arxiv_netscience_coauthorship, g-mds, OR
+- batch_15 arxiv_netscience_coauthorship, li-mds, AND
+- batch_16 arxiv_netscience_coauthorship, li-mds, OR
 
 ## Running the pipeline
 
@@ -146,17 +150,17 @@ Select a single spreading regime to decrease a number of parameters to consider
 Select the most important parameters of SF model and evaluate them. Problem -> evaluating a cartesian product of them is too demanding. Thus, I'd show such an evaluation parameter by parameter.
 
 These parameters are fixed:
-num_steps - num_actors - m0
-pr_internal - 0.7 for all layers
-pr_external - 0.2 for all layers
-pr_no_action - 0.1 for all layers
-dependency - all values eq. 1/num_layers
-num_layers - 3
-m0 = m
+* num_steps - num_actors - m0
+* pr_internal - 0.7 for all layers
+* pr_external - 0.2 for all layers
+* pr_no_action - 0.1 for all layers
+* dependency - all values eq. 1/num_layers
+* num_layers - 3
+* m0 = m
 
 9x5
 
 Variables:
 num_actors = [500, 750, 1000, 1250, 1500]
-m = [1, 3, 5, 7, 9]. # one was deleted because for 1 we have a tree
+m = [2, 4, 6, 8, 10]. # one was deleted because for 1 we have a tree
 num_steps = actors - m0
