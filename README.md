@@ -115,3 +115,48 @@ under `data/processed_results`:
 ├── visualisations_mds.py
 └── mds_algos_comparison.py
 ```
+
+## Doodles
+
+Closer evaluation of Scale-Free networks
+
+### Parameters of the `multinet` library which we were using
+
+evolution_er_ml(n)
+    n - Number of vertices (created at the beginning, before starting adding edges).
+
+evolution_pa_ml(m0,m)
+    m0 - Initial number of nodes.
+    m - Number of edges created for each new vertex joining the network.
+
+grow_ml(num_actors, num.steps, models, pr.internal, pr.external, dependency)
+    num_actors - The number of actors from which new nodes are selected during the generation process.
+    num_steps - Number of timestamps.
+    models - A vector containing one evolutionary model for each layer to be generated (i.e., either ER or PA). Incite number of layers
+    pr_internal - A vector with (for each layer) the probability that at each step the layer evolves according to the internal evolutionary model.
+    pr_external - A vector with (for each layer) the probability that at each step the layer evolves importing edges from another layer.
+    pr_no_action - (1 - pr_internal - pr_external), pr that in the given step nothing happens, i.e. growing of the network is slower
+    dependency - A matrix LxL where element (i,j) indicates the probability that layer i will import an edge from layer j in case an external event is triggered.
+
+### Idea
+
+Check MDS facilitates influence maximisation in Scale-free networks with different parameters.
+
+Select a single spreading regime to decrease a number of parameters to consider
+Select the most important parameters of SF model and evaluate them. Problem -> evaluating a cartesian product of them is too demanding. Thus, I'd show such an evaluation parameter by parameter.
+
+These parameters are fixed:
+num_steps - num_actors - m0
+pr_internal - 0.7 for all layers
+pr_external - 0.2 for all layers
+pr_no_action - 0.1 for all layers
+dependency - all values eq. 1/num_layers
+num_layers - 3
+m0 = m
+
+9x5
+
+Variables:
+num_actors = [500, 750, 1000, 1250, 1500]
+m = [1, 3, 5, 7, 9]. # one was deleted because for 1 we have a tree
+num_steps = actors - m0

@@ -1,7 +1,7 @@
 import argparse
 import yaml
 
-from src import main, brute_ds
+from src import main, brute_ds, generate_networks
 from src.utils import set_rng_seed
 
 
@@ -13,7 +13,8 @@ def parse_args(*args):
         nargs="?",
         type=str,
         # default="scripts/configs/example_main.yaml",
-        default="scripts/configs/example_bruteds.yaml",
+        # default="scripts/configs/example_bruteds.yaml",
+        default="scripts/configs/example_generate.yaml",
     )
     return parser.parse_args(*args)
 
@@ -33,6 +34,8 @@ if __name__ == "__main__":
         entrypoint = main
     elif experiment_type == "brute_ds":
         entrypoint = brute_ds
+    elif experiment_type == "generate_networks":
+        entrypoint = generate_networks
     else:
         raise ValueError(f"Unknown experiment type {experiment_type}")
 
