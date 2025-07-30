@@ -11,6 +11,7 @@ import torch
 
 from src.loaders.constants import (
     MLN_RAW_DATA_PATH,
+    MLN_2ND_STAGE_PREFIX,
     ARXIV_NETSCIENCE_COAUTHORSHIP,
     ARXIV_NETSCIENCE_COAUTHORSHIP_MATH,
     AUCS,
@@ -178,21 +179,6 @@ def get_timik1q2009_network():
     return nd.MultilayerNetwork.from_nx_layers(layer_graphs, layer_names)
 
 
-def convert_to_torch(load_networks_func: Callable) -> Callable:
-    """Decorate loader function so that it can convert the network on the fly to the tensor repr."""
-    @wraps(load_networks_func)
-    def wrapper(
-        *args, as_tensor: bool, **kwargs
-    ) -> nd.MultilayerNetwork | nd.MultilayerNetworkTorch:
-        net = load_networks_func(*args, **kwargs)
-        if as_tensor:
-            device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            return nd.MultilayerNetworkTorch.from_mln(net, device=device)
-        return net
-    return wrapper
-
-
-@convert_to_torch
 def load_network(net_name: str) -> nd.MultilayerNetwork:
     if net_name == FMRI74:
         return read_fmri74(network_dir=f"{MLN_RAW_DATA_PATH}/CONTROL_fmt", binary=True, thresh=0.5)
@@ -238,4 +224,7 @@ def load_network(net_name: str) -> nd.MultilayerNetwork:
         return get_timik1q2009_network()
     elif net_name == TOY_NETWORK:
         return nd.mln.functions.get_toy_network_piotr()
+    elif net_name.startswith(MLN_2ND_STAGE_PREFIX):
+        net_name = net_name.replace("-", "/") + ".mpx"
+        return nd.MultilayerNetwork.from_mpx(net_name)
     raise AttributeError(f"Unknown network: {net_name}")

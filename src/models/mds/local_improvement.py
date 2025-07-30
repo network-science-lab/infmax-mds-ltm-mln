@@ -213,8 +213,8 @@ if __name__ == "__main__":
     from src.loaders.net_loader import load_network
     from src.models.mds.greedy_search import get_mds_greedy
 
-    # net = load_network("sf2", as_tensor=False)
-    net = load_network("ckm_physicians", as_tensor=False)
+    # net = load_network("sf2")
+    net = load_network("ckm_physicians")
 
     start_time = time.time()
     mds = get_mds_locimpr(net, debug=True)

@@ -3,6 +3,7 @@
 from pathlib import Path
 
 MLN_RAW_DATA_PATH = Path(__file__).parent.parent.parent / "data/networks"
+MLN_2ND_STAGE_PREFIX = "data-networks_sf"
 
 # network names
 ARXIV_NETSCIENCE_COAUTHORSHIP = "arxiv_netscience_coauthorship"

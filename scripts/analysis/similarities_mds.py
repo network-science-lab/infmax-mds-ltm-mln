@@ -66,7 +66,7 @@ def similarities_mds_to_latex(csv_path: Path) -> None:
     actors_nbs = {}
     ms_df = pd.read_csv(csv_path, index_col=0)
     for net_name in ms_df["network"]:
-        net_graph = load_network(net_name, as_tensor=False)
+        net_graph = load_network(net_name)
         actors_nbs[net_name] = net_graph.get_actors_num()
     ms_df = ms_df.set_index("network")
     ms_df.loc[:, "net_size"] = actors_nbs

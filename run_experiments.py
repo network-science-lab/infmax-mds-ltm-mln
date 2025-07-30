@@ -12,9 +12,9 @@ def parse_args(*args):
         help="Experiment config file (default: config.yaml).",
         nargs="?",
         type=str,
-        # default="scripts/configs/example_main.yaml",
+        default="scripts/configs/example_main.yaml",
         # default="scripts/configs/example_bruteds.yaml",
-        default="scripts/configs/example_generate.yaml",
+        # default="scripts/configs/example_generate.yaml",
     )
     return parser.parse_args(*args)
 

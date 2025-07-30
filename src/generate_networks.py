@@ -76,18 +76,6 @@ def find_real_mds(
                     out_file.save_ds(cds_ids)
 
 
-def _process_net(net: params_handler.Network, out_dir: Path, min_es: int, max_es: int) -> None:
-    print(f"Processing {net.name} network")
-    find_real_mds(
-        net_graph=net.graph,
-        net_name=net.name,
-        min_eval_size=min_es,
-        max_eval_size=max_es,
-        out_dir=out_dir,
-    )
-    print(f"Computations completed for: {net.name}")
-
-
 def generate_network_and_save(
     nb_layers: int,
     nb_actors: int,

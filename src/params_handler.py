@@ -166,7 +166,7 @@ def load_networks(networks: list[str]) -> list[Network]:
     nets = []
     for net_name in networks:
         print(f"Loading {net_name} network")
-        nets.append(Network(net_name, load_network(net_name=net_name, as_tensor=False)))
+        nets.append(Network(net_name, load_network(net_name=net_name)))
     return nets
 
 

@@ -52,7 +52,7 @@ def generate_similarities_mds(workdir: Path) -> None:
     # normalise numbers by network sizes
     # actors_nbs = {}
     # for net_name in final_df["network"]:
-    #     net_graph = load_network(net_name, as_tensor=False)
+    #     net_graph = load_network(net_name)
     #     actors_nbs[net_name] = net_graph.get_actors_num()
     final_df = final_df.set_index("network")
     # final_df.loc[:, "net_size"] = actors_nbs
