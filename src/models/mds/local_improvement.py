@@ -23,7 +23,7 @@ from src.models.mds.utils import ShareableListManager
 
 def get_mds_locimpr(
     net: nd.MultilayerNetwork,
-    timeout: int = None,
+    timeout: int| None = None,
     debug: bool = False
 ) -> list[nd.MLNetworkActor]:
     """Return driver actors for a given network using MDS and local improvement."""
@@ -60,7 +60,7 @@ class LocalImprovement:
             proc.join(self.timeout)
             if proc.is_alive():
                 proc.terminate()
-                print("Timeout reached, returning best-so-far solution.")
+                print("Timeout reached, returning the best-so-far solution.")
             return slm.get_as_pruned_set()
     
     def _local_improvement(self, initial_set: set[Any], final_set: ShareableListManager) -> None:
@@ -185,7 +185,7 @@ class LocalImprovement:
                 return False
         return True
 
-    def _remove_redundant_vertices(self, dominating_set: set[Any]) -> set[any]:
+    def _remove_redundant_vertices(self, dominating_set: set[Any]) -> set[Any]:
         """
         Try to remove redundant vertices from the dominating_set without losing feasibility.
 

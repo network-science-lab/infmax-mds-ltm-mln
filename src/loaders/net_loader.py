@@ -118,7 +118,8 @@ def get_ddm_network(layernames_path, edgelist_path, weighted, digraph):
     df = pd.read_csv(
         edgelist_path,
         names=["layer_id", "node_1", "node_2", "weight"],
-        sep=" "
+        sep=" ",
+        dtype = {"node_1": str, "node_2": str},
     )
     net_ids_dict = {
         l_name: nx.DiGraph() if digraph else nx.Graph()
