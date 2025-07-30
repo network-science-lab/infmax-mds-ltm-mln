@@ -55,6 +55,7 @@ ranking_path: null  # path to read rankings of actors from (null to compute them
 # ranking_path: "_example_results/rankings"
 
 run:
+  experiment_type: "main"
   max_epochs_num: -1  # this is a wildcard for unlimited allowed epochs in LTM spread instance
   patience: 1  # after given number of epochs without spreading progress simulation is stopped
   repetitions: 2  # number of repetitions of each simulated case

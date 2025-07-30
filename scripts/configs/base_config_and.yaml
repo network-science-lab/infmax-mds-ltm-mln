@@ -37,6 +37,7 @@ networks: [
 ranking_path: null
 
 run:
+  experiment_type: "main"
   max_epochs_num: -1
   patience: 1
   repetitions: 30
