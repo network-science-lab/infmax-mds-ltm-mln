@@ -35,6 +35,7 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 .
 ├── README.md
 ├── data
+│   ├── brute_ds            -> a brute force DS finder
 │   ├── networks            -> networks used in exmeriments
 │   ├── processed_results
 │   ├── raw_results

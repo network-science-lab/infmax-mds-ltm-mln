@@ -66,11 +66,13 @@ def find_real_mds(
     out_file = OutFile(out_dir / f"{net_name}.csv")
     p_bar = tqdm(desc=f"Searching possible sets {net_name}", total=possible_ds_nb)
     for n in range(min_eval_size, max_eval_size + 1):
+        print(n)
         for cantidate_ds in itertools.combinations(actors, n):
             p_bar.update(1)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=UserWarning)
                 if is_dominating_set(set(cantidate_ds), net_graph):
+                    print(f"Found MDS at {n} size!")
                     cds_ids = {str(a.actor_id) for a in cantidate_ds}
                     out_file.save_ds(cds_ids)
 
