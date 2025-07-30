@@ -9,7 +9,7 @@ description = "Inf. Max. with Minimal Dominating Set under LTM for Multilayer Ne
 authors = [
     {name = "Michał Czuba", email="michal.czuba@pwr.edu.pl"},
     {name = "Mingshan Jia", email="Mingshan.Jia@uts.edu.au"},
-    {name = "Kaska Gabrys-Musial", email="Katarzyna.Musial-Gabrys@uts.edu.au"},
+    {name = "Kaska Musial-Gabrys", email="Katarzyna.Musial-Gabrys@uts.edu.au"},
     {name = "Piotr Bródka", email="piotr.brodka@pwr.edu.pl"},
 ]
 readme = "README.md"
