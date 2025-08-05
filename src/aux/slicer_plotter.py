@@ -192,6 +192,7 @@ class ResultsPlotter:
         "sf3": "sf",
         "sf5": "sf",
         "timik1q2009": "real",
+        "arxiv_netscience_coauthorship": "real",
     }
     _networks = list(_networks_groups.keys())
     _centralities = {

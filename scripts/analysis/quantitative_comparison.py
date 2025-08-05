@@ -15,7 +15,7 @@ def load_data() -> slicer_plotter.ResultsSlicer:
     return slicer_plotter.ResultsSlicer(
         [
             csv_file for csv_file in glob.glob(r"data/raw_results/**", recursive=True)
-            if re.search(r"batch_([1-9][0-2]?)/.*\.csv$", csv_file)
+            if re.search(r"batch_([1-9][0-6]?)/.*\.csv$", csv_file)
         ]
     )
 
