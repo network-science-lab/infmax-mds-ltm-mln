@@ -112,7 +112,7 @@ under `data/processed_results`:
 ├── distr_expos.ipynb
 ├── quantitative_comparison.py
 │   ├── effectiveness_heatmaps.py
-│   └── profile_reports.py <- All done up to this sctipt
+│   └── profile_reports.py
 ├── metrics.py
 ├── similarities_mds.py
 ├── similarities_seeds.py

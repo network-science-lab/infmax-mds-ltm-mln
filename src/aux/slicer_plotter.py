@@ -19,7 +19,7 @@ from src.aux import NML_ACTORS_COLOUR, MDS_ACTORS_COLOUR, OTHER_ACTORS_COLOUR
 
 class ResultsSlicer:
 
-    def __init__(self, raw_results_path: str, with_repetition: bool = False) -> None:
+    def __init__(self, raw_results_path: list[str], with_repetition: bool = False) -> None:
         self.raw_df = self.read_raw_df(raw_results_path, with_repetition)
 
     @staticmethod

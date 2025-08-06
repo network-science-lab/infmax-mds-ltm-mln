@@ -22,6 +22,10 @@ def generate_similarities_mds(workdir: Path) -> None:
         "batch_10",
         "batch_11",
         "batch_12",
+        "batch_13",
+        "batch_14",
+        "batch_15",
+        "batch_16",
     ]
     used_mds_list = []
     for batch_id in batches:

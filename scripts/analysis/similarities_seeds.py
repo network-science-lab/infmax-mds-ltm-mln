@@ -155,18 +155,18 @@ if __name__ == "__main__":
     results = ResultsSlicer(
         [
             csv_file for csv_file in glob.glob(fr"{str(root_dir)}/data/raw_results/**", recursive=True)
-            if re.search(r"batch_([1-9][0-2]?)/.*\.csv$", csv_file)
+            if re.search(r"batch_([1-9][0-6]?)/.*\.csv$", csv_file)
         ],
         with_repetition=True,
     )
 
     # compute the DFs
     seeds_similarity_and_df = generate_similarities_seeds(results, "AND")
-    seeds_similarity_and_df.to_csv(workdir.jsoinpath("similarities_seeds_and.csv"))
+    seeds_similarity_and_df.to_csv(workdir.joinpath("similarities_seeds_and.csv"))
     seeds_similarity_or_df = generate_similarities_seeds(results, "OR")
     seeds_similarity_or_df.to_csv(workdir.joinpath("similarities_seeds_or.csv"))
 
-    # this goes to publication
+    # this goes for publication
     similarities_seeds(results, "real")
     similarities_seeds(results, "er")
     similarities_seeds(results, "sf")
