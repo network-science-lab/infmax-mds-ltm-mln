@@ -14,17 +14,15 @@ from src.aux import auc
 
 class ResultsSlicer2:
 
-    def __init__(self, raw_results_path: list[str], with_repetition: bool = False) -> None:
-        self.raw_df = self.read_raw_df(raw_results_path, with_repetition)
+    def __init__(self, raw_results_path: list[str]) -> None:
+        self.raw_df = self.read_raw_df(raw_results_path)
 
     @staticmethod
-    def read_raw_df(raw_result_paths: list[str], with_repetition: bool) -> pd.DataFrame:
+    def read_raw_df(raw_result_paths: list[str]) -> pd.DataFrame:
         dfs = []
         print(set(str(Path(csv_path).parent) for csv_path in raw_result_paths))
         for csv_path in raw_result_paths:
             csv_df = pd.read_csv(csv_path)
-            if with_repetition:
-                csv_df["repetition"] = Path(csv_path).stem.split("_")[-1]
             dfs.append(csv_df)
         concat_df = pd.concat(dfs, axis=0, ignore_index=True)
         concat_df[["group", "series", "repetition"]] = (
@@ -33,6 +31,7 @@ class ResultsSlicer2:
             .apply(pd.Series)
             .rename(columns={0: "group", 1: "series", 2: "repetition"})
         )
+        concat_df["gain"] = concat_df["gain"] / 100
         return concat_df
 
     def get_slice(
@@ -203,21 +202,21 @@ def produce_latex_table(input_path: Path, output_path: Path) -> None:
     df["delta_std_gain"] = np.sqrt((df["mds_gain_std"] ** 2) + (df["nml_gain_std"] ** 2))
     df["delta_mean_auc"] = df["mds_auc_mean"] - df["nml_auc_mean"]
     df["delta_std_auc"] = np.sqrt((df["mds_auc_std"] ** 2) + (df["nml_auc_std"] ** 2))
-    print(df)
+    # print(df)
 
     df["delta_gain"] = (
-        "$\scinot{" +
+        "$" +
         df["delta_mean_gain"].apply(lambda x: f"{x:.2f}") +  
-        "}{" +
-        df["delta_std_gain"].apply(lambda x: f"{x:.0E}") +
-        "}$"
+        "(" +
+        df["delta_std_gain"].apply(lambda x: f"{x:.2f}") +
+        ")$"
     )
     df["delta_auc"] = (
-        "$\scinot{" +
+        "$" +
         df["delta_mean_auc"].apply(lambda x: f"{x:.2f}") +  
-        "}{" +
-        df["delta_std_auc"].apply(lambda x: f"{x:.0E}") +
-        "}$"
+        "(" +
+        df["delta_std_auc"].apply(lambda x: f"{x:.2f}") +
+        ")$"
     )
 
     df = df[["ss_method", "group", "series", "delta_gain", "delta_auc"]]
@@ -231,13 +230,12 @@ def produce_latex_table(input_path: Path, output_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    # root_dir = Path(__file__).resolve().parent.parent.parent
-    # out_dir = root_dir / Path("./data/processed_results_2nd/")
-    # out_dir.mkdir(exist_ok=True, parents=True)
-    # raw_results = load_data()
-    # print(raw_results)
-    # quantitative_results_df = produce_quantitative_results(raw_results)
-    # quantitative_results_df.to_csv("quantitative_comparison2.csv")
-    aa = Path("quantitative_comparison2.csv")
-    latex_path = Path(".")
-    produce_latex_table(aa, latex_path)
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    out_dir = root_dir / Path("./data/processed_results_2nd")
+    out_dir.mkdir(exist_ok=True, parents=True)
+    csv_path = out_dir / "quantitative_comparison.csv"
+
+    raw_results = load_data()
+    quantitative_results_df = produce_quantitative_results(raw_results)
+    quantitative_results_df.to_csv(csv_path)
+    produce_latex_table(csv_path, out_dir)
