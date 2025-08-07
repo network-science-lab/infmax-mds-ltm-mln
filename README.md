@@ -38,7 +38,9 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 │   ├── brute_ds            -> a brute force DS finder
 │   ├── networks            -> networks used in exmeriments
 │   ├── processed_results
+│   ├── processed_results_2nd
 │   ├── raw_results
+│   ├── raw_results_2nd
 │   └── test                -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
 ├── scripts
@@ -50,6 +52,8 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 ```
 
 ### Series of the results
+
+First stage:
 
 - batch_1 real-world, g-mds, AND
 - batch_2 real-world, g-mds, OR
@@ -67,6 +71,20 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 - batch_14 arxiv_netscience_coauthorship, g-mds, OR
 - batch_15 arxiv_netscience_coauthorship, li-mds, AND
 - batch_16 arxiv_netscience_coauthorship, li-mds, OR
+
+Second stage:
+
+- var_actors, series_1: |A|=250
+- var_actors, series_2: |A|=250
+- var_actors, series_3: |A|=250
+- var_actors, series_4: |A|=250
+- var_actors, series_5: |A|=250
+- var_hubs, series_1: m0=2 
+- var_hubs, series_2: m0=4 
+- var_hubs, series_3: m0=6 
+- var_hubs, series_4: m0=8 
+- var_hubs, series_5: m0=10 
+
 
 ## Running the pipeline
 
@@ -117,50 +135,6 @@ under `data/processed_results`:
 ├── similarities_mds.py
 ├── similarities_seeds.py
 ├── visualisations_mds.py
-└── mds_algos_comparison.py
+├── mds_algos_comparison.py
+└── quantitative_comparison_2nd.py
 ```
-
-## Doodles
-
-Closer evaluation of Scale-Free networks
-
-### Parameters of the `multinet` library which we were using
-
-evolution_er_ml(n)
-    n - Number of vertices (created at the beginning, before starting adding edges).
-
-evolution_pa_ml(m0,m)
-    m0 - Initial number of nodes.
-    m - Number of edges created for each new vertex joining the network.
-
-grow_ml(num_actors, num.steps, models, pr.internal, pr.external, dependency)
-    num_actors - The number of actors from which new nodes are selected during the generation process.
-    num_steps - Number of timestamps.
-    models - A vector containing one evolutionary model for each layer to be generated (i.e., either ER or PA). Incite number of layers
-    pr_internal - A vector with (for each layer) the probability that at each step the layer evolves according to the internal evolutionary model.
-    pr_external - A vector with (for each layer) the probability that at each step the layer evolves importing edges from another layer.
-    pr_no_action - (1 - pr_internal - pr_external), pr that in the given step nothing happens, i.e. growing of the network is slower
-    dependency - A matrix LxL where element (i,j) indicates the probability that layer i will import an edge from layer j in case an external event is triggered.
-
-### Idea
-
-Check MDS facilitates influence maximisation in Scale-free networks with different parameters.
-
-Select a single spreading regime to decrease a number of parameters to consider
-Select the most important parameters of SF model and evaluate them. Problem -> evaluating a cartesian product of them is too demanding. Thus, I'd show such an evaluation parameter by parameter.
-
-These parameters are fixed:
-* num_steps - num_actors - m0
-* pr_internal - 0.7 for all layers
-* pr_external - 0.2 for all layers
-* pr_no_action - 0.1 for all layers
-* dependency - all values eq. 1/num_layers
-* num_layers - 3
-* m0 = m
-
-9x5
-
-Variables:
-num_actors = [500, 750, 1000, 1250, 1500]
-m = [2, 4, 6, 8, 10]. # one was deleted because for 1 we have a tree
-num_steps = actors - m0

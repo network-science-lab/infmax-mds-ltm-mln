@@ -195,7 +195,7 @@ def produce_quantitative_results(results: ResultsSlicer2) -> pd.DataFrame:
     return pd.DataFrame(quantitative_results_aggr)
 
 
-def produce_latex_table(input_path: Path, output_path: Path) -> None:
+def produce_latex_tables(input_path: Path, output_path: Path) -> None:
     df = pd.read_csv(input_path, index_col=0)
 
     df["delta_mean_gain"] = df["mds_gain_mean"] - df["nml_gain_mean"]
@@ -229,6 +229,53 @@ def produce_latex_table(input_path: Path, output_path: Path) -> None:
             df_gm.reset_index().to_latex(output_path / f"{group}_{metric}.txt")
 
 
+def produce_latex_tables2(input_path: Path, output_path: Path) -> None:
+    df = pd.read_csv(input_path, index_col=0)
+    df = df[
+        [
+            'group',
+            'series',
+            'mds_gain_mean',
+            'mds_gain_std',
+            'mds_auc_mean',
+            'mds_auc_std',
+            'nml_gain_mean',
+            'nml_gain_std',
+            'nml_auc_mean',
+            'nml_auc_std',
+        ]
+    ]
+    df = df.groupby(["group", "series"]).mean().reset_index()
+
+    df["delta_mean_gain"] = df["mds_gain_mean"] - df["nml_gain_mean"]
+    df["delta_std_gain"] = np.sqrt((df["mds_gain_std"] ** 2) + (df["nml_gain_std"] ** 2))
+    df["delta_mean_auc"] = df["mds_auc_mean"] - df["nml_auc_mean"]
+    df["delta_std_auc"] = np.sqrt((df["mds_auc_std"] ** 2) + (df["nml_auc_std"] ** 2))
+    # print(df)
+
+    df["delta_gain"] = (
+        "$" +
+        df["delta_mean_gain"].apply(lambda x: f"{x:.2f}") +  
+        "(" +
+        df["delta_std_gain"].apply(lambda x: f"{x:.2f}") +
+        ")$"
+    )
+    df["delta_auc"] = (
+        "$" +
+        df["delta_mean_auc"].apply(lambda x: f"{x:.2f}") +  
+        "(" +
+        df["delta_std_auc"].apply(lambda x: f"{x:.2f}") +
+        ")$"
+    )
+
+    df = df[["group", "series", "delta_gain", "delta_auc"]]
+
+    for group in ResultsPlotter2()._groups:
+        df_g = df.loc[df["group"] == group]
+        df_g = df_g[["series", "delta_gain", "delta_auc"]].set_index("series").T
+        df_g.reset_index().to_latex(output_path / f"{group}.txt")
+
+
 if __name__ == "__main__":
     root_dir = Path(__file__).resolve().parent.parent.parent
     out_dir = root_dir / Path("./data/processed_results_2nd")
@@ -238,4 +285,5 @@ if __name__ == "__main__":
     raw_results = load_data()
     quantitative_results_df = produce_quantitative_results(raw_results)
     quantitative_results_df.to_csv(csv_path)
-    produce_latex_table(csv_path, out_dir)
+    produce_latex_tables(csv_path, out_dir)
+    produce_latex_tables2(csv_path, out_dir)
