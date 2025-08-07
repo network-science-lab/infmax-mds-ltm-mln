@@ -70,7 +70,7 @@ class ResultsSlicer:
         # return seed_ids, seed_frequency
 
     @staticmethod
-    def get_actors_nb(slice_df: np.ndarray) -> np.ndarray:
+    def get_actors_nb(slice_df: pd.DataFrame) -> np.ndarray:
         return (slice_df.iloc[0]["exposed_nb"] + slice_df.iloc[0]["unexposed_nb"]).astype(int).item()
 
     def obtain_seed_sets_for_simulated_case(
