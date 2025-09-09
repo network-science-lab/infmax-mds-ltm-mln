@@ -138,3 +138,11 @@ under `data/processed_results`:
 ├── mds_algos_comparison.py
 └── quantitative_comparison_2nd.py
 ```
+
+## Acknowledgment
+
+This work was supported by the National Science Centre, Poland [grant no. 2022/45/B/ST6/04145]
+(www.multispread.pwr.edu.pl); the Polish Ministry of Science and Higher Education programme
+“International Projects Co-Funded”; and the EU under the Horizon Europe [grant no. 101086321].
+Views and opinions expressed are those of the authors and do not necessarily reflect those of
+the funding agencies.
