@@ -1,0 +1,6 @@
+outs:
+- md5: 331464dd5cde9e0456a1e27196f04cac.dir
+  size: 1682135
+  nfiles: 21
+  hash: md5
+  path: series_1

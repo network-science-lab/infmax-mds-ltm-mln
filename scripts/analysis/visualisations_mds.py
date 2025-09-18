@@ -40,7 +40,7 @@ if __name__ == "__main__":
     #     if net_name == "timik1q2009":
     #         continue
     #     print(net_name)
-    #     net = load_network(net_name, as_tensor=False)
+    #     net = load_network(net_name)
     #     mds = mds_func(net)
     #     mds_plotter = MDSVisualiser(net, mds, net_name, out_dir)
     #     mds_plotter.plot_centralities()

@@ -22,6 +22,10 @@ def generate_similarities_mds(workdir: Path) -> None:
         "batch_10",
         "batch_11",
         "batch_12",
+        "batch_13",
+        "batch_14",
+        "batch_15",
+        "batch_16",
     ]
     used_mds_list = []
     for batch_id in batches:
@@ -52,7 +56,7 @@ def generate_similarities_mds(workdir: Path) -> None:
     # normalise numbers by network sizes
     # actors_nbs = {}
     # for net_name in final_df["network"]:
-    #     net_graph = load_network(net_name, as_tensor=False)
+    #     net_graph = load_network(net_name)
     #     actors_nbs[net_name] = net_graph.get_actors_num()
     final_df = final_df.set_index("network")
     # final_df.loc[:, "net_size"] = actors_nbs

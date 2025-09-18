@@ -19,7 +19,7 @@ from src.aux import NML_ACTORS_COLOUR, MDS_ACTORS_COLOUR, OTHER_ACTORS_COLOUR
 
 class ResultsSlicer:
 
-    def __init__(self, raw_results_path: str, with_repetition: bool = False) -> None:
+    def __init__(self, raw_results_path: list[str], with_repetition: bool = False) -> None:
         self.raw_df = self.read_raw_df(raw_results_path, with_repetition)
 
     @staticmethod
@@ -70,7 +70,7 @@ class ResultsSlicer:
         # return seed_ids, seed_frequency
 
     @staticmethod
-    def get_actors_nb(slice_df: np.ndarray) -> np.ndarray:
+    def get_actors_nb(slice_df: pd.DataFrame) -> np.ndarray:
         return (slice_df.iloc[0]["exposed_nb"] + slice_df.iloc[0]["unexposed_nb"]).astype(int).item()
 
     def obtain_seed_sets_for_simulated_case(
@@ -192,6 +192,7 @@ class ResultsPlotter:
         "sf3": "sf",
         "sf5": "sf",
         "timik1q2009": "real",
+        "arxiv_netscience_coauthorship": "real",
     }
     _networks = list(_networks_groups.keys())
     _centralities = {

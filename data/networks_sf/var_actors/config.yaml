@@ -1,0 +1,23 @@
+git_sha: afa0c2af6123f34a160db5b60d0a1f6d357c604a
+logging:
+  cohort_name: series
+  out_dir: ./data/networks_sf/var_actors
+parameters:
+  nb_actors:
+  - 500
+  - 750
+  - 1000
+  - 1250
+  - 1500
+  nb_hubs:
+  - 6
+  nb_layers:
+  - 3
+  pr_external:
+  - 0.2
+  pr_internal:
+  - 0.7
+run:
+  experiment_type: generate_networks
+  random_seed: 43
+  repetitions: 20

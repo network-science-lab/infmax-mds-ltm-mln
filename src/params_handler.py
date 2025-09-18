@@ -51,6 +51,17 @@ def get_parameter_space(
     return list(p_space), runner_type
 
 
+def get_parameter_space_generator(
+    nb_layers: list[int],
+    nb_actors: list[int],
+    nb_hubs: list[int],
+    pr_internal: list[float],
+    pr_external: list[float],
+) -> list[tuple[int, int, int, float, float]]:
+    p_space = itertools.product(nb_layers, nb_actors, nb_hubs, pr_internal, pr_external)
+    return list(p_space)
+
+
 def determine_runner(ss_methods: list[str]):
     ssm_prefixes = [ssm[:2] == "g^" for ssm in ss_methods]
     if all(ssm_prefixes):
@@ -155,7 +166,7 @@ def load_networks(networks: list[str]) -> list[Network]:
     nets = []
     for net_name in networks:
         print(f"Loading {net_name} network")
-        nets.append(Network(net_name, load_network(net_name=net_name, as_tensor=False)))
+        nets.append(Network(net_name, load_network(net_name=net_name)))
     return nets
 
 

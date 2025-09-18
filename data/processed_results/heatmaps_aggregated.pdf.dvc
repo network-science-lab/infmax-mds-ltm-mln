@@ -1,5 +1,5 @@
 outs:
-- md5: 638a1936a52e53827057a05d97337f18
-  size: 67164
+- md5: 4caa6ef2f8965740b58fb59abb6bc70d
+  size: 67108
   hash: md5
   path: heatmaps_aggregated.pdf

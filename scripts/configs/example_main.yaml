@@ -49,6 +49,7 @@ networks: [
   # "sf5",
   # "timik1q2009",
   "toy_network",
+  # "data-networks_sf-var_hubs-series_3-12",
 ]
 
 ranking_path: null  # path to read rankings of actors from (null to compute them before simulaiton)

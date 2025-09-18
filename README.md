@@ -1,6 +1,6 @@
 # Appl. of the Minimal Dominating Set for Influence Max. in Multilayer Networks
 
-A repository with a source code for the paper: https://arxiv.org/abs/2502.15236
+A repository with a source code for the paper: https://doi.org/10.1093/comnet/cnaf036
 
 * Authors: Michał Czuba(¶†), Mingshan Jia(†), Piotr Bródka(¶†), Katarzyna Musial(†)
 * Affiliation:  
@@ -38,7 +38,9 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 │   ├── brute_ds            -> a brute force DS finder
 │   ├── networks            -> networks used in exmeriments
 │   ├── processed_results
+│   ├── processed_results_2nd
 │   ├── raw_results
+│   ├── raw_results_2nd
 │   └── test                -> examplary results of the simulator used in the E2E test
 ├── env                     -> a definition of the runtime environment
 ├── scripts
@@ -50,6 +52,8 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 ```
 
 ### Series of the results
+
+First stage:
 
 - batch_1 real-world, g-mds, AND
 - batch_2 real-world, g-mds, OR
@@ -63,6 +67,24 @@ send a request via e-mail (michal.czuba@pwr.edu.pl) to have it granted. Then, ex
 - batch_10 artificial, li-mds, OR
 - batch_11 timik1q2009, li-mds, AND
 - batch_12 timik1q2009, li-mds, OR
+- batch_13 arxiv_netscience_coauthorship, g-mds, AND
+- batch_14 arxiv_netscience_coauthorship, g-mds, OR
+- batch_15 arxiv_netscience_coauthorship, li-mds, AND
+- batch_16 arxiv_netscience_coauthorship, li-mds, OR
+
+Second stage:
+
+- var_actors, series_1: |A|=250
+- var_actors, series_2: |A|=250
+- var_actors, series_3: |A|=250
+- var_actors, series_4: |A|=250
+- var_actors, series_5: |A|=250
+- var_hubs, series_1: m0=2 
+- var_hubs, series_2: m0=4 
+- var_hubs, series_3: m0=6 
+- var_hubs, series_4: m0=8 
+- var_hubs, series_5: m0=10 
+
 
 ## Running the pipeline
 
@@ -113,5 +135,14 @@ under `data/processed_results`:
 ├── similarities_mds.py
 ├── similarities_seeds.py
 ├── visualisations_mds.py
-└── mds_algos_comparison.py
+├── mds_algos_comparison.py
+└── quantitative_comparison_2nd.py
 ```
+
+## Acknowledgment
+
+This work was supported by the National Science Centre, Poland [grant no. 2022/45/B/ST6/04145]
+(www.multispread.pwr.edu.pl); the Polish Ministry of Science and Higher Education programme
+“International Projects Co-Funded”; and the EU under the Horizon Europe [grant no. 101086321].
+Views and opinions expressed are those of the authors and do not necessarily reflect those of
+the funding agencies.

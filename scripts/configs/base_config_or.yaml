@@ -32,6 +32,7 @@ networks: [
   "sf5",
   # ##### ##### ##### batch even
   "timik1q2009",
+  "arxiv_netscience_coauthorship",
 ]
 
 ranking_path: null

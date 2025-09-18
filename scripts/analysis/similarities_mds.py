@@ -18,6 +18,8 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
     zip_4_path = "data/raw_results/batch_10/rankings.zip"
     zip_5_path = "data/raw_results/batch_11/rankings.zip"
     zip_6_path = "data/raw_results/batch_12/rankings.zip"
+    zip_7_path = "data/raw_results/batch_15/rankings.zip"
+    zip_8_path = "data/raw_results/batch_16/rankings.zip"
     used_mds_list = [
         *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_1_path),
         *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_2_path),
@@ -25,9 +27,10 @@ def generate_similarities_mds() -> tuple[pd.DataFrame, pd.DataFrame]:
         *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_4_path),
         *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_5_path),
         *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_6_path),
+        *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_7_path),
+        *slicer_plotter.JSONParser().read_minimal_dominating_sets(zip_8_path),
     ]
     used_mds_df = pd.DataFrame(used_mds_list)
-    used_mds_df
 
     iterator_mds = product(
         # used_mds_df["ss_method"].unique(),
@@ -66,7 +69,7 @@ def similarities_mds_to_latex(csv_path: Path) -> None:
     actors_nbs = {}
     ms_df = pd.read_csv(csv_path, index_col=0)
     for net_name in ms_df["network"]:
-        net_graph = load_network(net_name, as_tensor=False)
+        net_graph = load_network(net_name)
         actors_nbs[net_name] = net_graph.get_actors_num()
     ms_df = ms_df.set_index("network")
     ms_df.loc[:, "net_size"] = actors_nbs

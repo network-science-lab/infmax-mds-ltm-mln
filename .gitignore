@@ -8,4 +8,4 @@
 data/experiment_setup
 doodles
 example_results
-visualise.py
+scripts/analysis/distr_expos.py
