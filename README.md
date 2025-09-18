@@ -1,6 +1,6 @@
 # Appl. of the Minimal Dominating Set for Influence Max. in Multilayer Networks
 
-A repository with a source code for the paper: https://arxiv.org/abs/2502.15236
+A repository with a source code for the paper: https://doi.org/10.1093/comnet/cnaf036
 
 * Authors: Michał Czuba(¶†), Mingshan Jia(†), Piotr Bródka(¶†), Katarzyna Musial(†)
 * Affiliation:  
